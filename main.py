@@ -1,4 +1,4 @@
-# Rolex 130523 2145
+# Rolex Alpha 0.1.0
 
 # Core modules
 from aiogram.utils import executor
@@ -16,6 +16,7 @@ from datetime import *
 
 # Database connection, we will use mySQL and localhost for now
 import mysql.connector
+
 pwd = None
 with open("includes\database_pwd.txt") as f:
     pwd = f.read().strip()
@@ -43,27 +44,113 @@ dp = Dispatcher(bot, storage=storage)
 
 ###########################################<<<MAIN CODE>>>###########################################
 
+##############<<<USER CREATION>>>##############
 
-
+#State machines for booking process to create user profile
+class Form(StatesGroup):
+    set_name = State()
+    set_room = State()
+    change_name = State()
+    change_room = State()
+    
 #State machines for booking process to create a sequential process (in progress)
 class Book(StatesGroup):
     picking_looking = State()
     picking_booked = State()
 
-#Local dictionary usage... probably will be deprecated
+#Local dictionary usage for user creation... probably will be deprecated
 users = {}
 # For local storage
 class User:
     def __init__(self, teleId):
         self.teleId = teleId
-        self.nusnetId = None
+        self.name = None
+        self.room = None
 
 #Probably will use to handle user familirization with bot
 @dp.message_handler(commands=['start'])
-async def start(message: types.Message):
-    await message.reply("Hi, welcome to our bot")
+async def start(message: types.Message, state : FSMContext):
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram and MySQL\nVersion: 0.1.0\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (user_id, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    if myresult != None:
+        await message.reply("You are already registered, if you would like to change details... ")
+    else:
+        await message.reply("Appears either you are not in the system, likely due to new Telegram account\nPlease Register Again!")
+        await message.reply("Let's begin by typing your name")
+        user = User(user_id)
+        users[user_id] = user
+        await state.set_state(Form.set_name)
+
+@dp.message_handler(state=Form.set_name)
+async def set_name(message: types.Message, state : FSMContext):
+    user = users[message.from_user.id]
+    user.name = message.text
+    await message.reply("Okay, what is your room number")
+    await state.set_state(Form.set_room)
+
+@dp.message_handler(state=Form.set_room)
+async def set_room(message: types.Message, state : FSMContext):
+    user = users[message.from_user.id]
+    user.room = message.text
+
+    #Insert into SQL database
+    sqlFormula = "INSERT INTO user (teleId, roomNo, name) VALUES (%s, %s, %s)"
+    data = (message.from_user.id, user.room, user.name)
+    mycursor.execute(sqlFormula, data)
+    db.commit()
+
+    await message.reply("Okay, profile is set, use /myinfo to check")
+    await state.finish()
+
+@dp.message_handler(commands=['myinfo'])
+async def myinfo(message: types.Message):
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (message.from_id, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    if myresult == None:
+        await message.reply("You are not registered, please /start to begin profile creation")
+    else:
+        await message.reply("Your name is " + myresult[-1] + "\nYour room number is " + myresult[-2])
+
+@dp.message_handler(commands=['namechg'])
+async def chg_name(message: types.Message, state : FSMContext):
+    await message.reply("Okay, what would you like to change your name to?")
+    await state.set_state(Form.change_name)
+
+@dp.message_handler(state=Form.change_name)
+async def chg_nameHandler(message: types.Message, state : FSMContext):
+    sqlFormula = "UPDATE user SET name = %s WHERE teleId = %s"
+    data = (message.text, message.from_id, )
+    mycursor.execute(sqlFormula, data)
+    db.commit()
+    await message.reply("Okay done, use /myinfo to check")
+    await state.finish()
+
+@dp.message_handler(commands=['roomchg'])
+async def chg_room(message: types.Message, state : FSMContext):
+    await message.reply("Okay, what would you like to change your room to?")
+    await state.set_state(Form.change_room)
+
+@dp.message_handler(state=Form.change_room)
+async def chg_roomHandler(message: types.Message, state : FSMContext):
+    sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
+    data = (message.text, message.from_id, )
+    mycursor.execute(sqlFormula, data)
+    db.commit()
+    await message.reply("Okay done, use /myinfo to check")
+    await state.finish()
+
+
+
+    
+
+
 
 @dp.message_handler(commands=['book'])
 async def book(message: types.Message):
