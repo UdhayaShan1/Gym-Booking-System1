@@ -1,6 +1,7 @@
-# Rolex Alpha 0.1.0
+# Rolex Alpha 0.1.1
+#Update to 0.2.X only when booking logic is started
 
-# Core modules
+#Modules to be imported
 from aiogram.utils import executor
 from aiogram.types import ParseMode
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -9,6 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram import Bot, Dispatcher, types
 import aiogram.utils.markdown as md
+from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButton
 import pickle
 import logging
 from datetime import *
@@ -52,6 +54,7 @@ class Form(StatesGroup):
     set_room = State()
     change_name = State()
     change_room = State()
+    delete_details = State()
     
 #State machines for booking process to create a sequential process (in progress)
 class Book(StatesGroup):
@@ -78,7 +81,7 @@ async def start(message: types.Message, state : FSMContext):
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     if myresult != None:
-        await message.reply("You are already registered, if you would like to change details... ")
+        await message.reply("You are already registered, if you would like to change details, type / and check appropriate commands ")
     else:
         await message.reply("Appears either you are not in the system, likely due to new Telegram account\nPlease Register Again!")
         await message.reply("Let's begin by typing your name")
@@ -146,9 +149,37 @@ async def chg_roomHandler(message: types.Message, state : FSMContext):
     await message.reply("Okay done, use /myinfo to check")
     await state.finish()
 
+@dp.message_handler(state='*', commands=['delete'])
+async def deleteMyDetails(message: types.Message, state : FSMContext):
+    button1 = KeyboardButton('Yes!')
+    button2 = KeyboardButton('No!')
+    keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(button1).add(button2)
+    await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our database and any attached bookings", reply_markup=keyboard1)
+    await state.set_state(Form.delete_details)
 
-
+@dp.message_handler(state=Form.delete_details)
+async def deleteHandler(message: types.Message, state : FSMContext):
+    if message.text == "Yes!":
+        sqlFormula = "DELETE FROM user WHERE teleId = %s"
+        data = (message.from_id, )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        await message.reply("Data deleted, use /start to begin user creation again")
+    else:
+        await message.reply("Data not deleted..")
     
+    await state.finish()
+
+
+@dp.message_handler()
+async def echo(message: types.Message):
+    await message.reply("Unknown command, use / to check for available commands")
+
+
+    #Add code to ammend all associated bookings to have teleId and spotterId to None.
+
+
+##############<<<BOOKING LOGIC>>>##############  
 
 
 
