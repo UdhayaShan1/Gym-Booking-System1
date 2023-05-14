@@ -1,4 +1,4 @@
-# Rolex Alpha 0.1.1
+# Rolex Alpha 0.1.2
 #Update to 0.2.X only when booking logic is started
 
 #Modules to be imported
@@ -14,6 +14,7 @@ from aiogram.types import ReplyKeyboardMarkup, ReplyKeyboardRemove, KeyboardButt
 import pickle
 import logging
 from datetime import *
+import re
 
 
 # Database connection, we will use mySQL and localhost for now
@@ -96,19 +97,29 @@ async def set_name(message: types.Message, state : FSMContext):
     await message.reply("Okay, what is your room number")
     await state.set_state(Form.set_room)
 
+#Room number validation
+def check_string_format(string):
+    pattern = r"^\d{2}-\d{2}[a-zA-Z]?$"
+    if re.match(pattern, string):
+        return True
+    else:
+        return False
+
 @dp.message_handler(state=Form.set_room)
 async def set_room(message: types.Message, state : FSMContext):
     user = users[message.from_user.id]
-    user.room = message.text
-
-    #Insert into SQL database
-    sqlFormula = "INSERT INTO user (teleId, roomNo, name) VALUES (%s, %s, %s)"
-    data = (message.from_user.id, user.room, user.name)
-    mycursor.execute(sqlFormula, data)
-    db.commit()
-
-    await message.reply("Okay, profile is set, use /myinfo to check")
-    await state.finish()
+    s = message.text
+    if check_string_format(s):
+        user.room = s
+        #Insert into SQL database
+        sqlFormula = "INSERT INTO user (teleId, roomNo, name) VALUES (%s, %s, %s)"
+        data = (message.from_user.id, user.room, user.name)
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        await message.reply("Okay, profile is set, use /myinfo to check")
+        await state.finish()
+    else:
+        await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
 @dp.message_handler(commands=['myinfo'])
 async def myinfo(message: types.Message):
@@ -142,19 +153,23 @@ async def chg_room(message: types.Message, state : FSMContext):
 
 @dp.message_handler(state=Form.change_room)
 async def chg_roomHandler(message: types.Message, state : FSMContext):
-    sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
-    data = (message.text, message.from_id, )
-    mycursor.execute(sqlFormula, data)
-    db.commit()
-    await message.reply("Okay done, use /myinfo to check")
-    await state.finish()
+    s = message.text
+    if check_string_format(s):
+        sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
+        data = (s, message.from_id, )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        await message.reply("Okay done, use /myinfo to check")
+        await state.finish()
+    else:
+        await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
 @dp.message_handler(state='*', commands=['delete'])
 async def deleteMyDetails(message: types.Message, state : FSMContext):
     button1 = KeyboardButton('Yes!')
     button2 = KeyboardButton('No!')
     keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(button1).add(button2)
-    await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our database and any attached bookings", reply_markup=keyboard1)
+    await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our mySQL database and any attached bookings", reply_markup=keyboard1)
     await state.set_state(Form.delete_details)
 
 @dp.message_handler(state=Form.delete_details)
@@ -167,16 +182,16 @@ async def deleteHandler(message: types.Message, state : FSMContext):
         await message.reply("Data deleted, use /start to begin user creation again")
     else:
         await message.reply("Data not deleted..")
-    
+    #Add code to ammend all associated bookings to have teleId and spotterId to None.
     await state.finish()
 
-
+#Handle unknown commands or text input by users
 @dp.message_handler()
 async def echo(message: types.Message):
     await message.reply("Unknown command, use / to check for available commands")
 
 
-    #Add code to ammend all associated bookings to have teleId and spotterId to None.
+    
 
 
 ##############<<<BOOKING LOGIC>>>##############  
