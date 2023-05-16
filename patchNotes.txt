@@ -1,0 +1,6 @@
+Updated from 0.2.0 onwards, contact @frostbitepillars on Telegram
+
+0.2.0
+1) Added simple booking prototype, user can select a date from 2 weeks from current. Sequentially, they
+can select time and create a booking.
+2) Added a 'book more' feature allowing users to book more timeslots instead of /book all over again.

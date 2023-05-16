@@ -1,4 +1,4 @@
-# Rolex Alpha 0.1.3
+# Rolex Alpha 0.2.0
 #Update to 0.2.X only when booking logic is properly started
 
 #Modules to be imported
@@ -68,6 +68,8 @@ class Form(StatesGroup):
 class Book(StatesGroup):
     picked_date= State()
     picked_time = State()
+    additional_time = State()
+    repicked_date = State()
 
 #Local dictionary usage for user creation... probably will be deprecated
 users = {}
@@ -79,6 +81,15 @@ class User:
         self.room = None
         self.spotter_name = None
         self.spotter_room = None
+
+#Local dictionary usage for booking creation...
+bookings = {}
+class Booking:
+    def __init__(self, teleId):
+        self.teleId = teleId
+        self.date = None
+        self.time = None
+
 
 #Force exit out of any state
 @dp.message_handler(state="*", commands=['exit'])
@@ -93,7 +104,7 @@ async def exit(message: types.Message, state : FSMContext):
 #Probably will use to handle user familirization with bot
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message, state : FSMContext):
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram and MySQL\nVersion: 0.1.3\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram and MySQL\nVersion: 0.2.0\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
@@ -250,7 +261,6 @@ async def chg_roomHandler(message: types.Message, state : FSMContext):
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
-
 @dp.message_handler(state='*', commands=['delete'])
 async def deleteMyDetails(message: types.Message, state : FSMContext):
     """
@@ -296,10 +306,15 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
 
 
 
+
+
 ##############<<<BOOKING LOGIC>>>##############  
 
 @dp.message_handler(commands=['book'])
 async def book(message: types.Message, state: FSMContext):
+    #Create local booking object
+    booking_obj = Booking(message.from_user.id)
+    bookings[message.from_user.id] = booking_obj
     #Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
     now = datetime.now()
     current_time = now.strftime("%H:%M:%S")
@@ -308,7 +323,7 @@ async def book(message: types.Message, state: FSMContext):
     dates = [current_date + timedelta(days=i) for i in range(14)]
     await message.reply("Sure, let's display available dates\n" +"Current date is "+ str(current_date) +"\nTime is " + str(current_time))
     
-    #Lets do this sequentially..
+    #Lets do this sequentially instead..
     """
     #Lets fetch our relevant rows
     sqlFormula = "SELECT * FROM booking_slots WHERE timeslot > %s AND date >= %s AND date <= %s"
@@ -336,9 +351,15 @@ async def book(message: types.Message, state: FSMContext):
     await state.set_state(Book.picked_date)
 
 
+def dateValidator(s):
+    pass
+
+
 @dp.callback_query_handler(state=Book.picked_date)
 async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
     #await call.message.answer(call.data)
+    booking_obj = bookings[call.from_user.id]
+    booking_obj.date = str(call.data)[5:]
     now = datetime.now()
     if now.date() != call.data:
         sqlFormula = "SELECT * FROM booking_slots WHERE date = %s"
@@ -362,17 +383,91 @@ async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
             
         calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
         await call.message.answer(str1, reply_markup=calendar_keyboard)
+        await state.set_state(Book.picked_time)
 
-    else:
-        current_time = now.strftime("%H:%M:%S")
+
+@dp.message_handler(state=Book.repicked_date)
+async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext):
+    #await message.reply(message.text)
+    #print((bookings.keys()))
+    booking_obj = bookings[list(bookings.keys())[0]]
+    now = datetime.now()
+    if now.date() != booking_obj.date:
         sqlFormula = "SELECT * FROM booking_slots WHERE date = %s"
-        data = (str(call.data)[5:], current_time, )
+        data = (str(booking_obj.date), )
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
+
+        time_button_labels = []
+        str1 = "Slots at a glance\n"
         for i in myresult:
-            await call.message.answer(i)
+            if i[3] == 0:
+                str1 += str(i[2])[:-3] + " ✅\n"
+                time_button_labels.append(str(i[2])[:-3])
+            else:
+                str1 += str(i[2])[:-3] + " ❌\n"
+        
+        buttons = [InlineKeyboardButton(
+            text=md.text(button_label),
+            callback_data=f"time_{button_label}"
+        ) for button_label in time_button_labels]
+            
+        calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+        
+        await message.reply(str1, reply_markup=calendar_keyboard)
+        await state.set_state(Book.picked_time)
+
+@dp.callback_query_handler(state=Book.picked_time)
+async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
+    #await bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    booking_obj = bookings[call.from_user.id]
+    booking_obj.time = str(call.data)[5:]
+    print(booking_obj.time, booking_obj.date)
+    sqlFormula = "SELECT * FROM booking_slots WHERE date = %s AND assoc_teleId = %s"
+    data = (booking_obj.date, call.from_user.id, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    if myresult == None or len(myresult) <= 2:
+        sqlFormula = "UPDATE booking_slots SET is_booked = 1, assoc_teleId = %s WHERE timeslot = %s AND date = %s"
+        data = (call.from_user.id, str(call.data)[5:], booking_obj.date, )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        await call.message.answer("Okay booked at " + booking_obj.date + " " + booking_obj.time + "\nEnjoy your workout!")
+
+        if myresult == None or len(myresult) < 2:
+            responses = ["Yes", "No"]
+            buttons = [InlineKeyboardButton(
+                text=md.text(button_label),
+                callback_data=f"{button_label}"
+            ) for button_label in responses]
+            keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+            await call.message.answer("Do you want to book additional slots for this day", reply_markup=keyboard)
+            await state.set_state(Book.additional_time)
+        else:
+            await state.finish()
+    else:
+        await call.message.answer("Sorry you have booked the maximum number of slots for yourself that day")
+        await state.finish()
+
+@dp.callback_query_handler(state=Book.additional_time)
+async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state : FSMContext):
+    if call.data == "Yes":
+        #await call.message.answer("Debug")
+        await state.set_state(Book.repicked_date)
+        await bookStageViewSlotsCycle(call.message, state)
+    else:
+        await call.message.answer("Okay slots booked")
+        state.finish()
+
+#In progress, dont call
+@dp.message_handler(commands=['check'])
+async def checkMyGymSlots(message: types.Message):
+    pass
+
+
     
-    await state.finish()
+
+    
 
 
 
