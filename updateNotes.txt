@@ -5,9 +5,15 @@ Updated from 0.2.0 onwards, contact @frostbitepillars on Telegram
 can select time and create a booking.
 2) Added a 'book more' feature allowing users to book more timeslots instead of /book all over again.
 
-0.2.1
+0.2.1 
 1) Changed teleId data type to string due to overflow issue
 2) Added booking validation check to ensure user is registered first
 3) Added ability to check previous bookings
 4) Added ability for user to 'Pick another date'
 5) Check if user is trying to book in the past
+
+0.2.2
+1) Added some documentation to code. Includes examples for code relevant to booking logic.
+2) /delete will now delete all associated bookings as well (For nerds, we are not actually deleting but merely updating
+the relevant slots to be vacant.)
+3) Renamed patchNotes to updateNotes (this makes more sense).

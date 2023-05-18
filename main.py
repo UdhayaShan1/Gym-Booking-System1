@@ -1,5 +1,4 @@
-# Rolex Alpha 0.2.1
-#Update to 0.2.X only when booking logic is properly started
+# Rolex Alpha 0.2.2
 
 #Modules to be imported
 from aiogram.utils import executor
@@ -92,18 +91,63 @@ class Booking:
 
 #Force exit out of any state
 @dp.message_handler(state="*", commands=['exit'])
-async def exit(message: types.Message, state : FSMContext):
-    curr_state  = await state.get_state()
-    if curr_state == None:
+async def exit(message: types.Message, state: FSMContext):
+    """
+    Handler to force exit out of any state in the FSM context.
+
+    Parameters:
+        message (types.Message): The message triggering the command.
+        state (FSMContext): The FSM context for managing states.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
+    Usage:
+        The handler is triggered when the "/exit" command is used. It checks if there is an active state.
+        - If there is no active state, it sends a response indicating that there is nothing to exit.
+        - If there is an active state, it sends a response acknowledging that the user has left the current state.
+          It suggests using "/" to continue with the available commands.
+        Finally, it finishes the current state using `state.finish()`, resetting the state machine.
+
+    Example:
+        User: /exit
+        Bot: Nothing to exit
+
+        User (in an active state): /exit
+        Bot: Okay, left current state. Use / to continue with available commands
+    """
+    curr_state = await state.get_state()
+    if curr_state is None:
         await message.reply("Nothing to exit")
     else:
-        await message.reply("Okay left current state, use / to continue with avaliable commands")
+        await message.reply("Okay, left current state. Use / to continue with available commands")
     await state.finish()
 
 #Probably will use to handle user familirization with bot
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message, state : FSMContext):
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL\nVersion: 0.2.1 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    """
+    Handler for the '/start' command. Initializes the registration process for the user.
+    
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state context of the conversation.
+
+    Usage:
+        /start - Start the gym booking bot and register (if not already registered).
+
+    Example:
+        User (not registered): /start
+        Bot: Begins form creation process
+
+        User (registered): /start
+        Bot: Already registered, directs on how to change info if needed
+
+    """
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL\nVersion: 0.2.2 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
@@ -121,6 +165,19 @@ async def start(message: types.Message, state : FSMContext):
 
 @dp.message_handler(state=Form.set_name)
 async def set_name(message: types.Message, state : FSMContext):
+    """
+    Handler for setting the user's name during the registration process.
+
+    Usage:
+        [User Input] - Set the user's name during the registration process.
+
+    Example:
+        John Doe
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state context of the conversation.
+    """
     user = users[message.from_user.id]
     user.name = message.text
     await message.reply("Okay, what is your room number")
@@ -136,27 +193,23 @@ def check_string_format(string):
 
 @dp.message_handler(state=Form.set_room)
 async def set_room(message: types.Message, state : FSMContext):
+    """
+    Handler for setting the user's room number during the registration process.
+
+    Usage:
+        [User Input] - Set the user's room number during the registration process.
+    
+    Example:
+        11-12
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state context of the conversation.
+    """
     user = users[message.from_user.id]
     s = message.text
     if check_string_format(s):
         user.room = s
-        """
-        #Insert into SQL database
-        sqlFormula = "INSERT INTO user (teleId, roomNo, name) VALUES (%s, %s, %s)"
-        data = (message.from_user.id, user.room, user.name)
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-        
-        options = ["Telegram", "Phone"]
-
-        buttons = [InlineKeyboardButton(
-            text=md.text(button_label),
-            callback_data=f"{button_label}"
-        ) for button_label in options]
-
-        calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
-        await message.reply("Okay, we require your spotter's details, would like to add their Telegram Handle or Phone No?", reply_markup=calendar_keyboard)
-        """
         await message.reply("Okay, what is your spotter's name?")
         await state.set_state(Form.set_spotter_name)
     else:
@@ -164,6 +217,19 @@ async def set_room(message: types.Message, state : FSMContext):
 
 @dp.message_handler(state=Form.set_spotter_name)
 async def set_spotter_name(message: types.Message, state : FSMContext):
+    """
+    Handler for setting the spotter's name during the registration process.
+
+    Usage:
+        [User Input] - Set the spotter's name during the registration process.
+    
+    Example:
+        John Doe
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state context of the conversation.
+    """
     user = users[message.from_user.id]
     user.spotter_name = message.text
     await message.reply("Okay what is their Room No?")
@@ -171,6 +237,20 @@ async def set_spotter_name(message: types.Message, state : FSMContext):
 
 @dp.message_handler(state=Form.set_spotter_room)
 async def set_spotter_room(message: types.Message, state : FSMContext):
+    """
+    Handler for setting the spotter's room number during the registration process.
+    If valid room, add user into SQL database.
+
+    Usage:
+        [User Input] - Set the spotter's room number during the registration process.
+
+    Example:
+        11-12F
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state context of the conversation.
+    """
     user = users[message.from_user.id]
     s = message.text
     if check_string_format(s):
@@ -187,6 +267,15 @@ async def set_spotter_room(message: types.Message, state : FSMContext):
 
 @dp.message_handler(commands=['myinfo'])
 async def myinfo(message: types.Message):
+    """
+    Handler for retrieving the user's profile information.
+
+    Usage:
+        /myinfo - Retrieve the user's profile information.
+
+    Args:
+        message (types.Message): The incoming message object.
+    """
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_id, )
     mycursor.execute(sqlFormula, data)
@@ -198,11 +287,31 @@ async def myinfo(message: types.Message):
 
 @dp.message_handler(commands=['namechg'])
 async def chg_name(message: types.Message, state : FSMContext):
+    """
+    Handler for changing the user's name.
+
+    Usage:
+        /namechg - Initiate the name change process.
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     await message.reply("Okay, what would you like to change your name to?")
     await state.set_state(Form.change_name)
 
 @dp.message_handler(state=Form.change_name)
 async def chg_nameHandler(message: types.Message, state : FSMContext):
+    """
+    Handler for changing the user's name.
+
+    Usage:
+        [User Input] - Provide the new name to change.
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     sqlFormula = "UPDATE user SET name = %s WHERE teleId = %s"
     data = (message.text, message.from_id, )
     mycursor.execute(sqlFormula, data)
@@ -212,11 +321,31 @@ async def chg_nameHandler(message: types.Message, state : FSMContext):
 
 @dp.message_handler(commands=['roomchg'])
 async def chg_room(message: types.Message, state : FSMContext):
+    """
+    Handler for changing the user's registered room.
+
+    Usage:
+        /roomchg - Initialise the room number change process
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     await message.reply("Okay, what would you like to change your registered room to?")
     await state.set_state(Form.change_room)
 
 @dp.message_handler(state=Form.change_room)
 async def chg_roomHandler(message: types.Message, state : FSMContext):
+    """
+    Handler for changing the user's registered room.
+
+    Usage:
+        [User Input] - Provide the new room number in the format XX-XX or XX-XXX.
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     s = message.text
     if check_string_format(s):
         sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
@@ -230,11 +359,31 @@ async def chg_roomHandler(message: types.Message, state : FSMContext):
 
 @dp.message_handler(commands=['spotternamechg'])
 async def chg_name(message: types.Message, state : FSMContext):
+    """
+    Handler for changing the user's spotter's name.
+
+    Usage:
+        /spotternamechg - Initialise the spotter's name change process
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     await message.reply("Okay, what would you like to change your spotter's name to?")
     await state.set_state(Form.change_spotter_name)
 
 @dp.message_handler(state=Form.change_spotter_name)
 async def chg_nameHandler(message: types.Message, state : FSMContext):
+    """
+    Handler for updating the user's spotter's name.
+
+    Usage:
+        [User Input] - Provide the new name for the spotter.
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     sqlFormula = "UPDATE user SET spotterName = %s WHERE teleId = %s"
     data = (message.text, message.from_id, )
     mycursor.execute(sqlFormula, data)
@@ -244,11 +393,31 @@ async def chg_nameHandler(message: types.Message, state : FSMContext):
 
 @dp.message_handler(commands=['spotterroomchg'])
 async def chg_room(message: types.Message, state : FSMContext):
+    """
+    Handler for changing the user's registered spotter's room number.
+
+    Usage:
+        [Command] - /spotterroomchg
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     await message.reply("Okay, what would you like to change your registered spotter's room number to?")
     await state.set_state(Form.change_spotter_room)
 
 @dp.message_handler(state=Form.change_spotter_room)
 async def chg_roomHandler(message: types.Message, state : FSMContext):
+    """
+    Handler for changing the user's spotter's room number.
+
+    Usage:
+        [User Input] - Provide the new room number for the spotter.
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     s = message.text
     if check_string_format(s):
         sqlFormula = "UPDATE user SET spotterRoomNo = %s WHERE teleId = %s"
@@ -262,6 +431,17 @@ async def chg_roomHandler(message: types.Message, state : FSMContext):
 
 @dp.message_handler(state='*', commands=['delete'])
 async def deleteMyDetails(message: types.Message, state : FSMContext):
+    """
+    Handler for deleting user details.
+
+    Usage:
+        [Command] - /delete
+
+    Args:
+        message (types.Message): The incoming message object.
+        state (FSMContext): The state object for managing conversation state.
+    """
+
     """
     button1 = KeyboardButton('Yes!')
     button2 = KeyboardButton('No!')
@@ -292,10 +472,24 @@ async def deleteHandler(message: types.Message, state : FSMContext):
 
 @dp.callback_query_handler(state=Form.delete_details)
 async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
+    """
+    Callback handler for confirming the deletion of user details.
+
+    Usage:
+        [CallbackData] - "Yes!" or "No!"
+
+    Args:
+        call (types.CallbackQuery): The incoming callback query object.
+        state (FSMContext): The state object for managing conversation state.
+    """
     if call.data == "Yes!":
         sqlFormula = "DELETE FROM user WHERE teleId = %s"
         data = (call.from_user.id, )
         mycursor.execute(sqlFormula, data)
+        db.commit()
+        
+        sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s WHERE assoc_teleId = %s"
+        mycursor.execute(sqlFormula, (None, call.from_user.id, ))
         db.commit()
         await call.message.answer("Data deleted, use /start to begin user creation again")
     else:
@@ -303,17 +497,52 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
     #Add code to ammend all associated bookings to have teleId and spotterId to None.
     await state.finish()
 
-
-
-
-
 ##############<<<BOOKING LOGIC>>>##############  
 
 @dp.message_handler(commands=['book'])
 async def book(message: types.Message, state: FSMContext):
-    #global_tele_id = message.from_user.id
-    #print(global_tele_id)
-    #Check if user is in the system in the first place
+    """
+    Command handler for the '/book' command.
+    Allows users to book an appointment.
+
+    This code defines a command handler that allows users to book an appointment. 
+    It first checks if the user is registered in the system. If not registered, it sends a message to prompt the user to start the profile creation process. 
+    If the user is registered, it creates a local booking object and stores it in the bookings dictionary. 
+    Next, the current date and time are fetched and displayed to the user. 
+    Then, a list of dates for the next 14 days is generated. Each date is converted into a button label and an InlineKeyboardButton object is created for each date. 
+    An InlineKeyboardMarkup is created with the list of buttons, and a message with the calendar keyboard for date selection is sent to the user. 
+    The conversation state is set to Book.picked_date to track the progress of the conversation.
+
+    Usage:
+
+    User sends the /book command to initiate the booking process.
+    The function checks if the user is registered in the system by querying the database.
+    If the user is not registered, a message is sent to prompt the user to start the profile creation process.
+    If the user is registered, a local booking object is created and stored in the bookings dictionary.
+    The current date, current time, and dates for the next 14 days are fetched.
+    The current date and time are displayed to the user.
+    A list of button labels is created for each date.
+    InlineKeyboardButton objects are created for each date using the button labels.
+    An InlineKeyboardMarkup object is created with the list of buttons.
+    A message with the calendar keyboard for date selection is sent to the user.
+    The conversation state is set to Book.picked_date to track the progress of the conversation.
+
+    Example:
+
+    User: /book
+
+    Bot: Sure, let's display available dates
+    Current date is 2023-05-18
+    Time is 15:30:00
+
+    Bot: Select date
+    [Inline keyboard with date options is displayed]
+    In the example above, the user sends the /book command. The bot responds by displaying the current date and time. It then presents an inline keyboard with date options for the user
+
+    Parameters:
+    - message: The message object representing the user's message.
+    - state: The FSMContext object for managing the conversation state.
+    """
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
@@ -347,8 +576,16 @@ async def book(message: types.Message, state: FSMContext):
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
 
-#For recalling of book if user picks 'Pick another date', function must be explicity called
 async def bookCycle(message: types.Message, state: FSMContext):
+    """
+    Function for handling the booking cycle.
+    Allows users to repick a date for booking.
+    Essentially to handle a go-back function.
+
+    Parameters:
+    - message: The message object representing the user's message.
+    - state: The FSMContext object for managing the conversation state.
+    """
     #Check if user is in the system in the first place
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (list(bookings.keys())[0], )
@@ -388,6 +625,46 @@ def timeValidator(s):
 
 @dp.callback_query_handler(state=Book.picked_date)
 async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
+    """
+    Callback query handler for viewing available time slots for booking.
+
+    Usage:
+
+    This callback query handler is triggered when the user selects a date from the calendar keyboard presented after the /book command. 
+    It processes the selected date and checks if it is in the past. 
+    
+    If the selected date is in the past, a message is sent to the user informing them that booking in the past is not allowed and the conversation is finished. 
+    If the selected date is valid, the handler retrieves the available time slots for the selected date from the database.
+    If the selected date is different from the current date, the handler retrieves all time slots for that date and generates a message displaying the availability of each time slot. 
+    The user can select a specific time slot for booking from the displayed options.
+
+    If the selected date is the current date, the handler retrieves only the available time slots from the current time onwards. 
+    If no available time slots are found, a message is sent to the user indicating that there are no more available time slots for the day. 
+    Otherwise, the available time slots are displayed, and the user can select a specific time slot for booking.
+    After displaying the available time slots, the conversation state is set to Book.picked_time to track the progress of the conversation.
+
+    Example:
+
+    User: [Selects a date from the calendar keyboard]
+
+    Bot: [Displays the available time slots for the selected date]
+        Slots at a glance
+        09:00 ✅
+        10:00 ❌
+        11:00 ✅
+        12:00 ✅
+        [Inline keyboard with time options is displayed]
+    In the example above, the user selects a date from the calendar keyboard. 
+    The bot responds by displaying the available time slots for that date. 
+    Each time slot is marked with either a ✅ (available) or ❌ (not available). 
+    The user can then select a specific time slot from the displayed options.
+    
+
+
+    Parameters:
+    - call: The CallbackQuery object representing the callback query.
+    - state: The FSMContext object for managing the conversation state.
+    """
     #await call.message.answer(call.data)
     booking_obj = bookings[call.from_user.id]
     booking_obj.date = str(call.data)[5:]
@@ -520,10 +797,42 @@ async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext):
                 await message.reply(str1, reply_markup=calendar_keyboard)
                 await state.set_state(Book.picked_time)
 
-
 @dp.callback_query_handler(state=Book.picked_time)
 async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
-    #await bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id)
+    """
+    Callback query handler for selecting a specific time slot for booking.
+
+    Parameters:
+    - call: The CallbackQuery object representing the callback query.
+    - state: The FSMContext object for managing the conversation state.
+
+    Usage:
+
+    This callback query handler is triggered when the user selects a specific time slot for booking from the available options. 
+    It checks if the user has selected the option to pick another date. 
+    If so, it restarts the booking process by calling the bookCycle function. 
+    Otherwise, it retrieves the selected time slot and performs the necessary database operations to book the slot for the user.
+    If the user has not booked the maximum number of slots for themselves on that day, the selected time slot is updated in the database as booked, and a confirmation message is sent to the user. 
+    If there are still available slots for booking on that day, the user is prompted with a yes/no question asking if they want to book additional slots. 
+    The conversation state is set to Book.additional_time to track the progress of the conversation.
+
+    If the user has already booked the maximum number of slots for themselves on that day, a message is sent to the user indicating that they have reached the maximum limit. 
+    The conversation is then finished.
+
+    Example:
+
+    User: [Selects a time slot for booking]
+
+    Bot: Okay booked at [Date] [Time]
+        Enjoy your workout!
+
+    Bot: Do you want to book additional slots for this day?
+        [Inline keyboard with 'Yes' and 'No' options is displayed]
+    In the example above, the user selects a specific time slot for booking. 
+    The bot confirms the booking and provides the date and time of the booked slot. 
+    It then asks the user if they want to book additional slots for the same day. 
+    The user can choose to either book more slots by selecting 'Yes' or finish the booking process by selecting 'No'.
+    """
     if call.data == "Pick another date":
         await bookCycle(call.message, state)
     else:
@@ -558,6 +867,10 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
 
 @dp.callback_query_handler(state=Book.additional_time)
 async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state : FSMContext):
+    """
+    Allow user to repick more time slots by activating the bookStageViewSlotsCycle function which is essentially
+    a non-CallbackQuery version of bookStageViewSlots.
+    """
     if call.data == "Yes":
         #await call.message.answer("Debug")
         #await state.set_state(Book.repicked_date)
@@ -567,9 +880,33 @@ async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state : F
         await call.message.answer("Thank you! Slots booked, use /checkactive to check your bookings! 😃")
         await state.finish()
 
-#In progress, dont call
 @dp.message_handler(state='*', commands=['checkactive'])
 async def checkMyGymSlots(message: types.Message):
+    """
+    Message handler for the /checkactive command to retrieve and display the active gym slots booked by the user.
+
+    Parameters:
+    - message: The Message object representing the incoming message.
+
+    Usage:
+
+    User sends the /checkactive command to check their active gym slots.
+    The function retrieves the current date and time.
+    It queries the database to fetch the active slots booked by the user for the current date and time, as well as future dates.
+    If no active slots are found, it sends a message response indicating that there are no active slots.
+    If active slots are found, it constructs a response message listing the booked slots' date and time.
+    The response message is sent back to the user.
+
+    Example:
+
+    User: /checkactive
+
+    Bot: ⌛ Slots booked on
+
+    2023-05-18 on 09:00 👌
+
+    2023-05-19 on 10:30 👌
+    """
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date = %s AND timeslot > %s"
@@ -594,25 +931,6 @@ async def checkMyGymSlots(message: types.Message):
             #await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
         await message.reply(str1)
 
-
-
-
-    """
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date >= %s"
-    data = (message.from_user.id, str(curr_date))
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchall()
-    #print(myresult)
-    if len(myresult) == 0:
-        await message.reply("No slots booked :(")
-    else:
-        str1 = "⌛Slots booked on\n\n"
-        for i in myresult:
-            str1 += str(i[1]) + " on " + str(i[2])[:-3] + "👌\n\n"
-            #await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
-        await message.reply(str1)
-    """
-
 @dp.message_handler(commands=["unbook"])
 async def unBook(message: types.Message):
     curr_date = datetime.now().date()
@@ -632,10 +950,22 @@ async def unBook(message: types.Message):
 #Leave this at bottom to catch unknown commands or text input by users
 @dp.message_handler()
 async def echo(message: types.Message):
+    """
+    Message handler for catching unknown commands or text input by users.
+
+    Parameters:
+    - message: The Message object representing the user's message.
+    """
     await message.reply("Unknown command, use / to check for available commands")
 
 @dp.callback_query_handler()
 async def echo1(call: types.CallbackQuery):
+    """
+    Callback query handler for catching callbacks from previous inline keyboard buttons.
+
+    Parameters:
+    - call: The CallbackQuery object representing the callback query.
+    """
     await call.message.answer("You may have clicked on a previous in-line keyboard button")
 
 if __name__ == '__main__':
