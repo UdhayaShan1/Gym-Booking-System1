@@ -17,3 +17,6 @@ can select time and create a booking.
 2) /delete will now delete all associated bookings as well (For nerds, we are not actually deleting but merely updating
 the relevant slots to be vacant.)
 3) Renamed patchNotes to updateNotes (this makes more sense).
+
+0.2.3
+1) Fixed a possible glitch where I assumed local dictionary were unique to instance, passed in id when explicity calling cycle functions.

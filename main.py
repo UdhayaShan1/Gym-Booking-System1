@@ -1,4 +1,4 @@
-# Rolex Alpha 0.2.2
+# Rolex Alpha 0.2.3
 
 #Modules to be imported
 from aiogram.utils import executor
@@ -70,9 +70,8 @@ class Book(StatesGroup):
     additional_time = State()
     repicked_date = State()
 
-#Local dictionary usage for user creation... probably will be deprecated
+#Dictionary for user creation Useful for profile creation.
 users = {}
-# For local storage
 class User:
     def __init__(self, teleId):
         self.teleId = teleId
@@ -81,7 +80,7 @@ class User:
         self.spotter_name = None
         self.spotter_room = None
 
-#Local dictionary usage for booking creation...
+#Dictionary for booking creation. No proper use yet... probably will be deprecated.
 bookings = {}
 class Booking:
     def __init__(self, teleId):
@@ -147,7 +146,7 @@ async def start(message: types.Message, state : FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL\nVersion: 0.2.2 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.3 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
@@ -157,7 +156,7 @@ async def start(message: types.Message, state : FSMContext):
     if myresult != None:
         await message.reply("You are already registered, if you would like to change details, type / and check appropriate commands ")
     else:
-        await message.reply("Appears either you are not in the system, likely due to new Telegram account\nPlease Register Again!")
+        await message.reply("Appears either you are not in the system!\nPlease Register!")
         await message.reply("Let's begin by typing your name")
         user = User(user_id)
         users[user_id] = user
@@ -576,7 +575,8 @@ async def book(message: types.Message, state: FSMContext):
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
 
-async def bookCycle(message: types.Message, state: FSMContext):
+async def bookCycle(message: types.Message, state: FSMContext, id):
+    await message.reply(bookings)
     """
     Function for handling the booking cycle.
     Allows users to repick a date for booking.
@@ -588,7 +588,7 @@ async def bookCycle(message: types.Message, state: FSMContext):
     """
     #Check if user is in the system in the first place
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
-    data = (list(bookings.keys())[0], )
+    data = (id, )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     if myresult == None:
@@ -731,10 +731,10 @@ async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
                 await state.set_state(Book.picked_time)
 
 #This function must be explicitly called if and only if user asks to book agn for same day
-async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext):
+async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext, id):
     #await message.reply(message.text)
     #print((bookings.keys()))
-    booking_obj = bookings[list(bookings.keys())[0]]
+    booking_obj = bookings[id]
     now = datetime.now()
     print(now.date(), booking_obj.date)
     date1 = now.date()
@@ -834,7 +834,7 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
     The user can choose to either book more slots by selecting 'Yes' or finish the booking process by selecting 'No'.
     """
     if call.data == "Pick another date":
-        await bookCycle(call.message, state)
+        await bookCycle(call.message, state, call.from_user.id)
     else:
         booking_obj = bookings[call.from_user.id]
         booking_obj.time = str(call.data)[5:]
@@ -875,7 +875,7 @@ async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state : F
         #await call.message.answer("Debug")
         #await state.set_state(Book.repicked_date)
         #Have to explicity call function as it is neither from query or user message
-        await bookStageViewSlotsCycle(call.message, state)
+        await bookStageViewSlotsCycle(call.message, state, call.from_user.id)
     else:
         await call.message.answer("Thank you! Slots booked, use /checkactive to check your bookings! 😃")
         await state.finish()
