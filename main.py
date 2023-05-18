@@ -1,4 +1,4 @@
-# Rolex Alpha 0.2.0
+# Rolex Alpha 0.2.1
 #Update to 0.2.X only when booking logic is properly started
 
 #Modules to be imported
@@ -90,7 +90,6 @@ class Booking:
         self.date = None
         self.time = None
 
-
 #Force exit out of any state
 @dp.message_handler(state="*", commands=['exit'])
 async def exit(message: types.Message, state : FSMContext):
@@ -104,7 +103,7 @@ async def exit(message: types.Message, state : FSMContext):
 #Probably will use to handle user familirization with bot
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message, state : FSMContext):
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram and MySQL\nVersion: 0.2.0\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL\nVersion: 0.2.1 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
@@ -312,48 +311,80 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
 
 @dp.message_handler(commands=['book'])
 async def book(message: types.Message, state: FSMContext):
-    #Create local booking object
-    booking_obj = Booking(message.from_user.id)
-    bookings[message.from_user.id] = booking_obj
-    #Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-    current_date = now.date()
-    current_date_14_forward = (now.date()+timedelta(days=14))
-    dates = [current_date + timedelta(days=i) for i in range(14)]
-    await message.reply("Sure, let's display available dates\n" +"Current date is "+ str(current_date) +"\nTime is " + str(current_time))
-    
-    #Lets do this sequentially instead..
-    """
-    #Lets fetch our relevant rows
-    sqlFormula = "SELECT * FROM booking_slots WHERE timeslot > %s AND date >= %s AND date <= %s"
-    data = (current_time, current_date,current_date_14_forward)
+    #global_tele_id = message.from_user.id
+    #print(global_tele_id)
+    #Check if user is in the system in the first place
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchall()
-    str1 = ""
-    for i in dates:
-        str1 += str(i)+"\n"
-    #await message.reply(str1)
-    """
-
-    # Create a list of button labels for each date
-    button_labels = [date.strftime('%Y-%m-%d') for date in dates]
-
-    # Create a list of InlineKeyboardButton objects for each date
-    buttons = [InlineKeyboardButton(
-        text=md.text(button_label),
-        callback_data=f"date_{button_label}"
-    ) for button_label in button_labels]
-
-    # Create an InlineKeyboardMarkup object with the list of buttons
-    calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
-    await message.reply("Select date", reply_markup=calendar_keyboard)
-    await state.set_state(Book.picked_date)
+    myresult = mycursor.fetchone()
+    if myresult == None:
+        await message.reply("You are not registered, use /start to begin profile creation")
+    else:
+        #Create local booking object
+        booking_obj = Booking(message.from_user.id)
+        bookings[message.from_user.id] = booking_obj
+        #Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        current_date = now.date()
+        current_date_14_forward = (now.date()+timedelta(days=14))
+        dates = [current_date + timedelta(days=i) for i in range(14)]
+        await message.reply("Sure, let's display available dates\n" +"Current date is "+ str(current_date) +"\nTime is " + str(current_time))
 
 
+        # Create a list of button labels for each date
+        button_labels = [date.strftime('%Y-%m-%d') for date in dates]
+
+        # Create a list of InlineKeyboardButton objects for each date
+        buttons = [InlineKeyboardButton(
+            text=md.text(button_label),
+            callback_data=f"date_{button_label}"
+        ) for button_label in button_labels]
+
+        # Create an InlineKeyboardMarkup object with the list of buttons
+        calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+        await message.reply("Select date", reply_markup=calendar_keyboard)
+        await state.set_state(Book.picked_date)
+
+#For recalling of book if user picks 'Pick another date', function must be explicity called
+async def bookCycle(message: types.Message, state: FSMContext):
+    #Check if user is in the system in the first place
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (list(bookings.keys())[0], )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    if myresult == None:
+        await message.reply("You are not registered, use /start to begin profile creation")
+    else:
+        #Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        current_date = now.date()
+        current_date_14_forward = (now.date()+timedelta(days=14))
+        dates = [current_date + timedelta(days=i) for i in range(14)]
+        await message.reply("Sure, let's display available dates\n" +"Current date is "+ str(current_date) +"\nTime is " + str(current_time))
+    
+        # Create a list of button labels for each date
+        button_labels = [date.strftime('%Y-%m-%d') for date in dates]
+
+        # Create a list of InlineKeyboardButton objects for each date
+        buttons = [InlineKeyboardButton(
+            text=md.text(button_label),
+            callback_data=f"date_{button_label}"
+        ) for button_label in button_labels]
+
+        # Create an InlineKeyboardMarkup object with the list of buttons
+        calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+        await message.reply("Select date", reply_markup=calendar_keyboard)
+        await state.set_state(Book.picked_date)
+
+#To be completed
 def dateValidator(s):
     pass
-
+#To be completed
+def timeValidator(s):
+    pass
 
 @dp.callback_query_handler(state=Book.picked_date)
 async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
@@ -361,108 +392,233 @@ async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
     booking_obj = bookings[call.from_user.id]
     booking_obj.date = str(call.data)[5:]
     now = datetime.now()
-    if now.date() != call.data:
-        sqlFormula = "SELECT * FROM booking_slots WHERE date = %s"
-        data = (str(call.data)[5:], )
-        mycursor.execute(sqlFormula, data)
-        myresult = mycursor.fetchall()
+    print(now.date(), call.data)
+    date1 = now.date()
+    date2 = datetime.strptime(str(call.data)[5:], "%Y-%m-%d").date()
+    if date1 > date2:
+        await call.message.answer("You cannot book in the past, /book to retry")
+        await state.finish()
+    else:
+        if str(now.date()) != str(booking_obj.date):
+            sqlFormula = "SELECT * FROM booking_slots WHERE date = %s"
+            data = (str(call.data)[5:], )
+            mycursor.execute(sqlFormula, data)
+            myresult = mycursor.fetchall()
 
-        time_button_labels = []
-        str1 = "Slots at a glance\n"
-        for i in myresult:
-            if i[3] == 0:
-                str1 += str(i[2])[:-3] + " ✅\n"
-                time_button_labels.append(str(i[2])[:-3])
-            else:
-                str1 += str(i[2])[:-3] + " ❌\n"
-        
-        buttons = [InlineKeyboardButton(
-            text=md.text(button_label),
-            callback_data=f"time_{button_label}"
-        ) for button_label in time_button_labels]
+            time_button_labels = []
+            str1 = "Slots at a glance\n"
+            for i in myresult:
+                if i[3] == 0:
+                    str1 += str(i[2])[:-3] + " ✅\n"
+                    time_button_labels.append(str(i[2])[:-3])
+                else:
+                    str1 += str(i[2])[:-3] + " ❌\n"
             
-        calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
-        await call.message.answer(str1, reply_markup=calendar_keyboard)
-        await state.set_state(Book.picked_time)
+            buttons = [InlineKeyboardButton(
+                text=md.text(button_label),
+                callback_data=f"time_{button_label}"
+            ) for button_label in time_button_labels]
+                
+            calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+            button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
+            calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+            await call.message.answer(str1, reply_markup=calendar_keyboard)
+            await state.set_state(Book.picked_time)
+        else:
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            sqlFormula = "SELECT * FROM booking_slots WHERE date = %s AND timeslot > %s"
+            data = (str(call.data)[5:], current_time,)
+            mycursor.execute(sqlFormula, data)
+            myresult = mycursor.fetchall()
+            if len(myresult) == 0:
+                await call.message.answer("No more avaliable time slots for the day")
+                await state.finish()
+            else:
+                time_button_labels = []
+                str1 = "Slots at a glance\n"
+                for i in myresult:
+                    if i[3] == 0:
+                        str1 += str(i[2])[:-3] + " ✅\n"
+                        time_button_labels.append(str(i[2])[:-3])
+                    else:
+                        str1 += str(i[2])[:-3] + " ❌\n"
+                
+                buttons = [InlineKeyboardButton(
+                    text=md.text(button_label),
+                    callback_data=f"time_{button_label}"
+                ) for button_label in time_button_labels]
+                button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
+                calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+                await call.message.answer(str1, reply_markup=calendar_keyboard)
+                await state.set_state(Book.picked_time)
 
-
-@dp.message_handler(state=Book.repicked_date)
+#This function must be explicitly called if and only if user asks to book agn for same day
 async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext):
     #await message.reply(message.text)
     #print((bookings.keys()))
     booking_obj = bookings[list(bookings.keys())[0]]
     now = datetime.now()
-    if now.date() != booking_obj.date:
-        sqlFormula = "SELECT * FROM booking_slots WHERE date = %s"
-        data = (str(booking_obj.date), )
-        mycursor.execute(sqlFormula, data)
-        myresult = mycursor.fetchall()
+    print(now.date(), booking_obj.date)
+    date1 = now.date()
+    date2 = datetime.strptime(str(booking_obj.date), "%Y-%m-%d").date()
+    if date1 > date2:
+        await message.reply("You cannot book in the past, /book to retry")
+        await state.finish()
+    else:
+        if str(now.date()) != str(booking_obj.date):
+            sqlFormula = "SELECT * FROM booking_slots WHERE date = %s"
+            data = (str(booking_obj.date), )
+            mycursor.execute(sqlFormula, data)
+            myresult = mycursor.fetchall()
 
-        time_button_labels = []
-        str1 = "Slots at a glance\n"
-        for i in myresult:
-            if i[3] == 0:
-                str1 += str(i[2])[:-3] + " ✅\n"
-                time_button_labels.append(str(i[2])[:-3])
-            else:
-                str1 += str(i[2])[:-3] + " ❌\n"
-        
-        buttons = [InlineKeyboardButton(
-            text=md.text(button_label),
-            callback_data=f"time_{button_label}"
-        ) for button_label in time_button_labels]
+            time_button_labels = []
+            str1 = "Slots at a glance\n"
+            for i in myresult:
+                if i[3] == 0:
+                    str1 += str(i[2])[:-3] + " ✅\n"
+                    time_button_labels.append(str(i[2])[:-3])
+                else:
+                    str1 += str(i[2])[:-3] + " ❌\n"
             
-        calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
-        
-        await message.reply(str1, reply_markup=calendar_keyboard)
-        await state.set_state(Book.picked_time)
+            buttons = [InlineKeyboardButton(
+                text=md.text(button_label),
+                callback_data=f"time_{button_label}"
+            ) for button_label in time_button_labels]
+                
+            button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
+            calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+            await message.reply(str1, reply_markup=calendar_keyboard)
+            await state.set_state(Book.picked_time)
+        else:
+            now = datetime.now()
+            current_time = now.strftime("%H:%M:%S")
+            sqlFormula = "SELECT * FROM booking_slots WHERE date = %s AND timeslot > %s"
+            data = (str(booking_obj.date), current_time,)
+            mycursor.execute(sqlFormula, data)
+            myresult = mycursor.fetchall()
+            if len(myresult) == 0:
+                await message.reply("No more avaliable time slots for the day")
+                await state.finish()
+            else:
+                time_button_labels = []
+                str1 = "Slots at a glance\n"
+                for i in myresult:
+                    if i[3] == 0:
+                        str1 += str(i[2])[:-3] + " ✅\n"
+                        time_button_labels.append(str(i[2])[:-3])
+                    else:
+                        str1 += str(i[2])[:-3] + " ❌\n"
+                
+                buttons = [InlineKeyboardButton(
+                    text=md.text(button_label),
+                    callback_data=f"time_{button_label}"
+                ) for button_label in time_button_labels]
+                
+                button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
+                calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+                await message.reply(str1, reply_markup=calendar_keyboard)
+                await state.set_state(Book.picked_time)
+
 
 @dp.callback_query_handler(state=Book.picked_time)
 async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
     #await bot.edit_message_reply_markup(chat_id=call.message.chat.id, message_id=call.message.message_id)
-    booking_obj = bookings[call.from_user.id]
-    booking_obj.time = str(call.data)[5:]
-    print(booking_obj.time, booking_obj.date)
-    sqlFormula = "SELECT * FROM booking_slots WHERE date = %s AND assoc_teleId = %s"
-    data = (booking_obj.date, call.from_user.id, )
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchall()
-    if myresult == None or len(myresult) <= 2:
-        sqlFormula = "UPDATE booking_slots SET is_booked = 1, assoc_teleId = %s WHERE timeslot = %s AND date = %s"
-        data = (call.from_user.id, str(call.data)[5:], booking_obj.date, )
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-        await call.message.answer("Okay booked at " + booking_obj.date + " " + booking_obj.time + "\nEnjoy your workout!")
-
-        if myresult == None or len(myresult) < 2:
-            responses = ["Yes", "No"]
-            buttons = [InlineKeyboardButton(
-                text=md.text(button_label),
-                callback_data=f"{button_label}"
-            ) for button_label in responses]
-            keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
-            await call.message.answer("Do you want to book additional slots for this day", reply_markup=keyboard)
-            await state.set_state(Book.additional_time)
-        else:
-            await state.finish()
+    if call.data == "Pick another date":
+        await bookCycle(call.message, state)
     else:
-        await call.message.answer("Sorry you have booked the maximum number of slots for yourself that day")
-        await state.finish()
+        booking_obj = bookings[call.from_user.id]
+        booking_obj.time = str(call.data)[5:]
+        print(booking_obj.time, booking_obj.date)
+        sqlFormula = "SELECT * FROM booking_slots WHERE date = %s AND assoc_teleId = %s"
+        data = (booking_obj.date, call.from_user.id, )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        if myresult == None or len(myresult) <= 2:
+            sqlFormula = "UPDATE booking_slots SET is_booked = 1, assoc_teleId = %s WHERE timeslot = %s AND date = %s"
+            data = (call.from_user.id, str(call.data)[5:], booking_obj.date, )
+            mycursor.execute(sqlFormula, data)
+            db.commit()
+            await call.message.answer("Okay booked at " + booking_obj.date + " " + booking_obj.time + "\nEnjoy your workout!")
+
+            if myresult == None or len(myresult) < 2:
+                responses = ["Yes", "No"]
+                buttons = [InlineKeyboardButton(
+                    text=md.text(button_label),
+                    callback_data=f"{button_label}"
+                ) for button_label in responses]
+                keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+                await call.message.answer("Do you want to book additional slots for this day", reply_markup=keyboard)
+                await state.set_state(Book.additional_time)
+            else:
+                await state.finish()
+        else:
+            await call.message.answer("Sorry you have booked the maximum number of slots for yourself that day")
+            await state.finish()
 
 @dp.callback_query_handler(state=Book.additional_time)
 async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state : FSMContext):
     if call.data == "Yes":
         #await call.message.answer("Debug")
-        await state.set_state(Book.repicked_date)
+        #await state.set_state(Book.repicked_date)
+        #Have to explicity call function as it is neither from query or user message
         await bookStageViewSlotsCycle(call.message, state)
     else:
-        await call.message.answer("Okay slots booked")
-        state.finish()
+        await call.message.answer("Thank you! Slots booked, use /checkactive to check your bookings! 😃")
+        await state.finish()
 
 #In progress, dont call
-@dp.message_handler(commands=['check'])
+@dp.message_handler(state='*', commands=['checkactive'])
 async def checkMyGymSlots(message: types.Message):
+    curr_date = datetime.now().date()
+    curr_time = datetime.now().strftime("%H:%M:%S")
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date = %s AND timeslot > %s"
+    data = (message.from_user.id, str(curr_date), str(curr_time), )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    res = []
+    for i in myresult:
+        res.append(i)
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date > %s"
+    data = (message.from_user.id, str(curr_date), )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    for i in myresult:
+        res.append(i)
+    if len(res) == 0:
+        await message.reply("No active slots")
+    else:
+        str1 = "⌛Slots booked on\n\n"
+        for i in res:
+            str1 += str(i[1]) + " on " + str(i[2])[:-3] + " 👌\n\n"
+            #await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
+        await message.reply(str1)
+
+
+
+
+    """
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date >= %s"
+    data = (message.from_user.id, str(curr_date))
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    #print(myresult)
+    if len(myresult) == 0:
+        await message.reply("No slots booked :(")
+    else:
+        str1 = "⌛Slots booked on\n\n"
+        for i in myresult:
+            str1 += str(i[1]) + " on " + str(i[2])[:-3] + "👌\n\n"
+            #await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
+        await message.reply(str1)
+    """
+
+@dp.message_handler(commands=["unbook"])
+async def unBook(message: types.Message):
+    curr_date = datetime.now().date()
+    current_time = datetime.now.strftime("%H:%M:%S")
     pass
+
 
 
     

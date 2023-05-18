@@ -4,3 +4,10 @@ Updated from 0.2.0 onwards, contact @frostbitepillars on Telegram
 1) Added simple booking prototype, user can select a date from 2 weeks from current. Sequentially, they
 can select time and create a booking.
 2) Added a 'book more' feature allowing users to book more timeslots instead of /book all over again.
+
+0.2.1
+1) Changed teleId data type to string due to overflow issue
+2) Added booking validation check to ensure user is registered first
+3) Added ability to check previous bookings
+4) Added ability for user to 'Pick another date'
+5) Check if user is trying to book in the past
