@@ -4,3 +4,4 @@ Updated from 0.2.0 onwards, contact @frostbitepillars on Telegram
 2) Add in-case SQL check to validate (whether that timeslot actually has vacancy), whether date is >= curr.date
 3) Add current date handling, I skipped that as I wanted to see if the general idea works, since it does(?) now need
 to handle time checks for current date (added)
+4) If possible to reduce commands for info changing and create a single response way using states?
