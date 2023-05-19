@@ -1,8 +1,8 @@
 Updated from 0.2.0 onwards, contact @frostbitepillars on Telegram
 
-1) In-line keyboard is nice to see but it is not possible to differentiate previous in-line keyboards and current.
+1) (NOT FIXED) In-line keyboard is nice to see but it is not possible to differentiate previous in-line keyboards and current.
 So even if time-slot is not offered, they can find a keyboard that offers it and exploit it.
     1.1) Fix this by adding final SQL checks.
     1.2) Validation check for both time and date, use regular expression module?
-2) Possible major glitch, looks like I may have wrongly assumed that the classes are local to the instance of user running. It is not. Fixed in 0.2.3 by passing
+2) (FIXED) Possible major glitch, looks like I may have wrongly assumed that the classes are local to the instance of user running. It is not. Fixed in 0.2.3 by passing
 in relevant info through functions instead.

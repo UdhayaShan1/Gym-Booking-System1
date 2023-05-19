@@ -20,3 +20,6 @@ the relevant slots to be vacant.)
 
 0.2.3
 1) Fixed a possible glitch where I assumed local dictionary were unique to instance, passed in id when explicity calling cycle functions.
+
+0.2.4
+1) Added ability to unbook slots

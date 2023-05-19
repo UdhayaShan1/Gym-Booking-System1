@@ -1,4 +1,4 @@
-# Rolex Alpha 0.2.3
+# Rolex Alpha 0.2.4
 
 #Modules to be imported
 from aiogram.utils import executor
@@ -69,6 +69,8 @@ class Book(StatesGroup):
     picked_time = State()
     additional_time = State()
     repicked_date = State()
+    picked_unbook_date = State()
+    picked_unbook_additional = State()
 
 #Dictionary for user creation Useful for profile creation.
 users = {}
@@ -80,7 +82,7 @@ class User:
         self.spotter_name = None
         self.spotter_room = None
 
-#Dictionary for booking creation. No proper use yet... probably will be deprecated.
+#Dictionary for booking creation. No proper use yet... probably will be deprecated.             
 bookings = {}
 class Booking:
     def __init__(self, teleId):
@@ -146,7 +148,7 @@ async def start(message: types.Message, state : FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.3 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.4 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
@@ -923,7 +925,7 @@ async def checkMyGymSlots(message: types.Message):
     for i in myresult:
         res.append(i)
     if len(res) == 0:
-        await message.reply("No active slots")
+        await message.reply("No active slots 😕")
     else:
         str1 = "⌛Slots booked on\n\n"
         for i in res:
@@ -932,16 +934,94 @@ async def checkMyGymSlots(message: types.Message):
         await message.reply(str1)
 
 @dp.message_handler(commands=["unbook"])
-async def unBook(message: types.Message):
+async def unBook(message: types.Message, state : FSMContext):
     curr_date = datetime.now().date()
-    current_time = datetime.now.strftime("%H:%M:%S")
-    pass
+    curr_time = datetime.now().strftime("%H:%M:%S")
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date = %s AND timeslot > %s"
+    data = (message.from_user.id, str(curr_date), str(curr_time), )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    res = []
+    for i in myresult:
+        res.append(i)
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date > %s"
+    data = (message.from_user.id, str(curr_date), )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    for i in myresult:
+        res.append(i)
+    if len(res) == 0:
+        await message.reply("You have no active slots at the moment 😕")
+        await state.finish()
+    else:
+        responses = []
+        for i in res:
+            responses.append(str(i[1]) + " " + str(i[2]))
+        
+        buttons = [InlineKeyboardButton(
+            text=md.text(button_label),
+            callback_data=f"{button_label}"
+        ) for button_label in responses]
+        keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+        await message.reply("Choose the slot that you wish to unbook", reply_markup=keyboard)
+        await state.set_state(Book.picked_unbook_date)
 
+async def unBookCycle(message: types.Message, state : FSMContext, id):
+    curr_date = datetime.now().date()
+    curr_time = datetime.now().strftime("%H:%M:%S")
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date = %s AND timeslot > %s"
+    data = (id, str(curr_date), str(curr_time), )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    res = []
+    for i in myresult:
+        res.append(i)
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date > %s"
+    data = (id, str(curr_date), )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    for i in myresult:
+        res.append(i)
+    if len(res) == 0:
+        await message.reply("You have no active slots at the moment 😕")
+        await state.finish()
+    else:
+        responses = []
+        for i in res:
+            responses.append(str(i[1]) + " " + str(i[2]))
+        
+        buttons = [InlineKeyboardButton(
+            text=md.text(button_label),
+            callback_data=f"{button_label}"
+        ) for button_label in responses]
+        keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+        await message.reply("Choose the slot that you wish to unbook", reply_markup=keyboard)
+        await state.set_state(Book.picked_unbook_date)
 
+@dp.callback_query_handler(state=Book.picked_unbook_date)
+async def unBookHandler(call: types.CallbackQuery, state : FSMContext):
+    date = str(call.data.split()[0])
+    time = str(call.data.split()[1])
+    sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s WHERE date = %s AND timeslot = %s"
+    mycursor.execute(sqlFormula, (None, date, time, ))
+    db.commit()
+    await call.message.answer("Okay unbooked slot at " + date + " " + time)
+    responses = ["Yes", "No"]
+    buttons = [InlineKeyboardButton(
+        text=md.text(button_label),
+        callback_data=f"{button_label}"
+            ) for button_label in responses]
+    keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+    await call.message.answer("Would like you to unbook additional slots?", reply_markup=keyboard)
+    await state.set_state(Book.picked_unbook_additional)
 
-    
-
-    
+@dp.callback_query_handler(state=Book.picked_unbook_additional)
+async def unBookMoreHandler(call: types.CallbackQuery, state : FSMContext):
+    if call.data == "Yes":
+        await unBookCycle(call.message, state, call.from_user.id)
+    else:
+        await call.message.answer("Okay exiting! Thank you")
+        await state.finish()
 
 
 
