@@ -1,7 +1,14 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session
 import bcrypt
-
 import re
+import base64
+import os.path
+import smtplib
+from email.message import EmailMessage
+import ssl
+import random
+import string
+
 
 
 # Database connection, we will use mySQL and localhost for now
@@ -18,7 +25,11 @@ db = mysql.connector.connect(
 
 mycursor = db.cursor()
 
+#Flask set-up
 app = Flask(__name__)
+app.secret_key = None
+with open("includes\pyFlaskSecretKey.txt") as f:
+    app.secret_key = f.read().strip()
 
 
 @app.route('/')
@@ -37,6 +48,38 @@ def check(email):
         return True
     return False
 
+# Generate a random OTP
+def generate_otp():
+    otp = ''.join(random.choices(string.digits, k=4))
+    return otp
+
+
+@app.route('/send_otp', methods=["POST"])
+def send_otp():
+    email_receiver = request.form['email']
+    if check(email_receiver) == False:
+        return jsonify({"status" : "failure", "message" : "Invalid email format, use XXX email only"})
+    email_sender = "chad.ionos2@gmail.com"
+    email_password = None
+    with open("includes\gmailPwd.txt") as f:
+        email_password = f.read().strip()
+    subject = "OTP"
+    otp = generate_otp()
+    body = "Your OTP is " + otp;
+    session["otp"] = otp
+    em = EmailMessage()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em['Subject'] = subject
+    em.set_content(body)
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
+    return jsonify({"status" : "success", "message" : "sent"})
+
+
+
 
 @app.route('/register', methods=["POST", "GET"])
 def register():
@@ -44,6 +87,10 @@ def register():
     if request.method == "POST":
         email = request.form['email']
         password = request.form['password']
+        otp = request.form['otp']
+        print(session)
+        if "otp" not in session or session["otp"] != otp:
+            return jsonify({"status": "failure", "message": "Wrong OTP, try again"})
         # Make a regular expression
         # for validating an Email
         if check(email) == False:
@@ -57,7 +104,7 @@ def register():
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
         if len(myresult) > 0:
-            return jsonify({"status": "failure", "message": "You are registered already, proceed to login!"})
+            return jsonify({"status": "success", "message": "You are registered already, proceed to login!"})
 
         sqlFormula = "INSERT INTO user_website (email, password) VALUES (%s, %s)"
         data = (email, hashed_password)
@@ -70,9 +117,12 @@ def register():
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
-    email = request.form['email']
-    password = request.form['password']
-    
+    if request.method == "POST":
+        email = request.form['email']
+        password = request.form['password']
+    else:
+        return render_template("login.html")
+
 
 
 
