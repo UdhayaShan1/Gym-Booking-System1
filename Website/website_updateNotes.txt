@@ -3,3 +3,7 @@
 
 0.2.0
 1) Added OTP verification for email alike to gov forms. I am suprised that it works.
+
+0.3.0
+1) Added login functionality
+2) To note all passwords are encrypted with bcrypt.

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, redirect
 import bcrypt
 import re
 import base64
@@ -78,9 +78,6 @@ def send_otp():
         smtp.sendmail(email_sender, email_receiver, em.as_string())
     return jsonify({"status" : "success", "message" : "sent"})
 
-
-
-
 @app.route('/register', methods=["POST", "GET"])
 def register():
     #print(request.method)
@@ -119,10 +116,29 @@ def register():
 def login():
     if request.method == "POST":
         email = request.form['email']
+        if check(email) == False:
+            return jsonify({"status" : "failure", "message" : "Invalid email format"})
         password = request.form['password']
-    else:
-        return render_template("login.html")
+        sqlFormula = "SELECT * FROM user_website WHERE email = %s"
+        data = (email, )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        if len(myresult) == 0:
+            return jsonify({"status" : "failure", "message" : "You have not registered"})
+        if bcrypt.checkpw(password.encode("utf-8"), myresult[0][1].encode("utf-8")):
+            session['email'] = email
+            return jsonify({"status" : "success", "message" : "You have logged in!"})
 
+        return jsonify({"status" : "failure", "message" : "Wrong password"}) 
+
+    return render_template("login.html")
+
+@app.route('/main')
+def main():
+    #Check if valid session
+    if "email" in session:
+        return render_template("main.html")
+    return redirect("/")
 
 
 

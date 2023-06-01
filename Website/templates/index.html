@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <script src="{{ url_for('static', filename='js/index.js') }}"></script>
   </head>
   <body>
     <h1>Welcome to FitBook Version 0.1.0 Alpha</h1>
@@ -13,13 +14,4 @@
     <h1 id="RegisterTitle">Register Here</h1>
     <button type="button" id="registerButton">Click Me!</button>
   </body>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var registerButton = document.getElementById("registerButton");
-      registerButton.addEventListener("click", function () {
-        window.location.href = "/register"; // Redirect to the register page
-      });
-    });
-  </script>
 </html>
