@@ -1,4 +1,4 @@
-# Rolex Alpha 0.2.4
+# Rolex Alpha 0.2.5
 
 #Modules to be imported
 from aiogram.utils import executor
@@ -148,7 +148,7 @@ async def start(message: types.Message, state : FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.4 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.5 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
@@ -966,6 +966,7 @@ async def unBook(message: types.Message, state : FSMContext):
         await message.reply("Choose the slot that you wish to unbook", reply_markup=keyboard)
         await state.set_state(Book.picked_unbook_date)
 
+#To be explicity called if user wishes to unbook more slots
 async def unBookCycle(message: types.Message, state : FSMContext, id):
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
@@ -1022,7 +1023,6 @@ async def unBookMoreHandler(call: types.CallbackQuery, state : FSMContext):
     else:
         await call.message.answer("Okay exiting! Thank you")
         await state.finish()
-
 
 
 

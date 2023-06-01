@@ -23,3 +23,6 @@ the relevant slots to be vacant.)
 
 0.2.4
 1) Added ability to unbook slots
+
+0.2.5
+1)

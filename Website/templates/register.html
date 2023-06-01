@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+</head>
+<body>
+    <h1>Welcome to the register page!</h1>
+    <a href=/Website/login.html>Registered alr? Login here</a><br>
+    <br>
+    <form id="registerForm">
+        <label for "email">Email</label><br>
+        <input type="text" id="email" name="email"><br>
+        <label for "password">Password</label><br>
+        <input type="password" id="password" name="password"><br>
+        <label for "confirmPassword">Confirm Password</label><br>
+        <input type="password" id="confirmPass" name="confirmPass"><br>
+        <br>
+        <button type = submit>Submit</button>   
+    </form>
+    <p id="registerMessage">testOutput</p>
+</body>
+
+</html>
