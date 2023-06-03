@@ -8,7 +8,9 @@ from email.message import EmailMessage
 import ssl
 import random
 import string
-
+from flask_login import LoginManager, login_user, current_user, login_required, UserMixin, logout_user
+import mysql.connector
+from flask_session import Session
 
 
 # Database connection, we will use mySQL and localhost for now
@@ -31,6 +33,14 @@ app.secret_key = None
 with open("includes\pyFlaskSecretKey.txt") as f:
     app.secret_key = f.read().strip()
 
+app.config["SESSION_TYPE"] = "filesystem"  # Use filesystem-based session storage
+app.config["SESSION_PERMANENT"] = False  # Session expires when the user closes the browser
+app.config["SESSION_USE_SIGNER"] = True  # Enable secure session signing
+app.config["SESSION_COOKIE_SECURE"] = True  # Transmit session cookies over HTTPS only
+app.config["SESSION_COOKIE_HTTPONLY"] = True  # Set session cookies as HttpOnly
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Set SameSite attribute for session cookies
+
+Session(app)
 
 @app.route('/')
 def home():
@@ -57,6 +67,13 @@ def generate_otp():
 @app.route('/send_otp', methods=["POST"])
 def send_otp():
     email_receiver = request.form['email']
+    sqlFormula = "SELECT * FROM user_website WHERE email = %s"
+    data = (email_receiver, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    if myresult != None:
+        return jsonify({"status" : "failure", "message" : "Already registered"})
+
     if check(email_receiver) == False:
         return jsonify({"status" : "failure", "message" : "Invalid email format, use XXX email only"})
     email_sender = "chad.ionos2@gmail.com"
@@ -135,12 +152,26 @@ def login():
 
 @app.route('/main')
 def main():
+    print(session)
     #Check if valid session
     if "email" in session:
         return render_template("main.html")
     return redirect("/")
 
+@app.route('/logout', methods = ["POST"])
+def logout():
+    session.clear()
+    return jsonify({"status" : "success", "message" : "You have logged out"})
 
+@app.route('/user_details', methods = ["POST"])
+def userdetails():
+    if "email" not in session:
+        return redirect("/")
+    sqlFormula = "SELECT * FROM user_website WHERE email = %s"
+    data = (session["email"], )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    return jsonify({"email" :  session["email"]})
 
 if __name__ == '__main__':
     app.run(debug=True)

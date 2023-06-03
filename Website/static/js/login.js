@@ -18,7 +18,8 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .then(response => response.json())
         .then(data => {
-            console.log(data);
+            //window.alert(data.status);
+            //console.log(data);
             if (data.status == "success") {
                 window.location.href = "/main";
             } 

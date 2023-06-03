@@ -1,13 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Main Page</title>
+    <style>
+        /* CSS styles for the navigation bar */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: lightpink;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .navbar h1,
+        .navbar p {
+            margin: 0;
+            padding: 5px;
+        }
+
+        .navbar h1 {
+            font-size: 20px;
+        }
+
+        .navbar p {
+            font-size: 14px;
+            color: #777;
+        }
+
+        .navbar button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .navbar button:hover {
+            background-color: #555;
+        }
+    </style>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
-    <h1>Simple Main page lul</h1>
-    
+    <div class="navbar">
+        <h1>Welcome, <span id="email"></span></h1>
+        <button id="logoutButton">Logout</button>
+    </div>
 </body>
 </html>

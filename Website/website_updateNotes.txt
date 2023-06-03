@@ -7,3 +7,7 @@
 0.3.0
 1) Added login functionality
 2) To note all passwords are encrypted with bcrypt.
+
+0.4.0
+1) Honestly alot of modifications and rollbacks so net change isn't much to say the least
+2) Added session security.
