@@ -1,4 +1,4 @@
-# Rolex Alpha 0.2.5
+# Rolex Alpha 0.2.6
 
 #Modules to be imported
 from aiogram.utils import executor
@@ -16,6 +16,11 @@ from datetime import *
 import re
 import aiogram.utils.markdown as md
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+import random
+import string
+from email.message import EmailMessage
+import ssl
+import smtplib
 
 
 # Database connection, we will use mySQL and localhost for now
@@ -52,6 +57,7 @@ dp = Dispatcher(bot, storage=storage)
 
 #State machines for booking process to create user profile
 class Form(StatesGroup):
+    set_nusnet = State()
     set_name = State()
     #set_phone = State()
     set_room = State()
@@ -61,6 +67,7 @@ class Form(StatesGroup):
     change_room = State()
     change_spotter_name = State()
     change_spotter_room = State()
+    otp_verify = State()
     delete_details = State()
     
 #State machines for booking process to create a sequential process (in progress)
@@ -77,6 +84,8 @@ users = {}
 class User:
     def __init__(self, teleId):
         self.teleId = teleId
+        self.nusnet = None
+        self.otp = None
         self.name = None
         self.room = None
         self.spotter_name = None
@@ -148,7 +157,7 @@ async def start(message: types.Message, state : FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.5 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.6 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
@@ -159,10 +168,55 @@ async def start(message: types.Message, state : FSMContext):
         await message.reply("You are already registered, if you would like to change details, type / and check appropriate commands ")
     else:
         await message.reply("Appears either you are not in the system!\nPlease Register!")
-        await message.reply("Let's begin by typing your name")
+        await message.reply("Lets begin by typing your NUSNET ID!")
+        #await message.reply("Let's begin by typing your name")
         user = User(user_id)
         users[user_id] = user
+        await state.set_state(Form.set_nusnet)
+
+#Check if valid nusnet id
+def validnusNet(input_string):
+    pattern = r'^e\d{7}$'  # Regex pattern to match "e" followed by 7 digits
+    match = re.match(pattern, input_string)
+    return match is not None
+
+
+@dp.message_handler(state=Form.set_nusnet)
+async def set_nusnet(message: types.Message, state : FSMContext):
+    user = users[message.from_user.id]
+    nusnet = str(message.text).lower()
+    if validnusNet(nusnet) == False:
+        await message.reply("Please type valid NUSNET id!")
+    else:
+        user.nusnet = nusnet
+        await message.reply("Okay, what is your name?")
         await state.set_state(Form.set_name)
+
+# Generate a random OTP
+async def generate_otp():
+    otp = ''.join(random.choices(string.digits, k=4))
+    return otp
+
+#Send otp to user
+async def send_otp(nusnet):
+    email_receiver = nusnet+"@u.nus.edu"
+    email_sender = "chad.ionos2@gmail.com"
+    email_pw = None
+    with open("includes\gmailPwd.txt") as f:
+        email_pw = f.read().strip()
+    em = EmailMessage()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em["Subject"] = "Your FitBook OTP"
+    otp = await generate_otp()
+    em.set_content("Your OTP is " + otp)
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_pw)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
+    return otp
+
+    
 
 @dp.message_handler(state=Form.set_name)
 async def set_name(message: types.Message, state : FSMContext):
@@ -257,8 +311,8 @@ async def set_spotter_room(message: types.Message, state : FSMContext):
     if check_string_format(s):
         user.spotter_room = s
         #Insert into SQL database
-        sqlFormula = "INSERT INTO user (teleId, roomNo, name, spotterName, spotterRoomNo) VALUES (%s, %s, %s, %s, %s)"
-        data = (message.from_user.id, user.room, user.name, user.spotter_name, user.spotter_room)
+        sqlFormula = "INSERT INTO user (teleId, roomNo, name, spotterName, spotterRoomNo, nusnet) VALUES (%s, %s, %s, %s, %s, %s)"
+        data = (message.from_user.id, user.room, user.name, user.spotter_name, user.spotter_room, user.nusnet)
         mycursor.execute(sqlFormula, data)
         db.commit()
         await message.reply("Okay info set, check via /myinfo")
@@ -284,7 +338,12 @@ async def myinfo(message: types.Message):
     if myresult == None:
         await message.reply("You are not registered, please /start to begin profile creation")
     else:
-        await message.reply("Your name is " + myresult[3] + "\nYour room number is " + myresult[2] +"\nYour spotter is " + myresult[-2] + "\nYour spotter room number is " + myresult[-1])
+        verifiedStr = ""
+        if myresult[-1] == 0:
+            verifiedStr = "\n\nYou are not verified yet, proceed to /verify!"
+        else:
+            verifiedStr = "\n\nYou are verified!"
+        await message.reply("Your NUSNET is " + myresult[-2] + "\n\nYour name is " + myresult[3] + "\n\nYour room number is " + myresult[2] +"\n\nYour spotter is " + myresult[-4] + "\n\nYour spotter room number is " + myresult[-3] + verifiedStr)
 
 @dp.message_handler(commands=['namechg'])
 async def chg_name(message: types.Message, state : FSMContext):
@@ -430,6 +489,45 @@ async def chg_roomHandler(message: types.Message, state : FSMContext):
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
+@dp.message_handler(commands=['verify'])
+async def verify(message: types.Message, state : FSMContext):
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (message.from_user.id, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    if myresult == None:
+        await message.reply("You are not in the system, please /start first 👍")
+    else:
+        if myresult[-1] == 1:
+            await message.reply("You are already verified!")
+        else:
+            if message.from_user.id not in users:
+                user = User(message.from_user.id)
+                users[message.from_user.id] = user
+            else:
+                user = users[message.from_user.id]
+
+            otp = await send_otp(myresult[-2])
+            user.otp = otp
+            await message.reply("Okay, OTP sent to your NUSNET email, please type it out")
+            await state.set_state(Form.otp_verify)
+
+@dp.message_handler(state=Form.otp_verify)
+async def otp_handler(message: types.Message, state : FSMContext):
+    #print(users)
+    otp_given = message.text
+    user = users[message.from_user.id]
+    if otp_given == user.otp:
+        sqlFormula = "UPDATE user SET verifiedTele = %s WHERE teleId = %s"
+        data = (1, message.from_user.id, )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        await message.reply("Woo! 😺 You are now verified and can proceed to book!")
+        await state.finish()
+    else:
+        await message.reply("😔 Sorry, OTP is not correct, try /verify again!")
+        await state.finish()
+
 @dp.message_handler(state='*', commands=['delete'])
 async def deleteMyDetails(message: types.Message, state : FSMContext):
     """
@@ -548,7 +646,9 @@ async def book(message: types.Message, state: FSMContext):
     data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
-    if myresult == None:
+    if myresult[-1] == 0:
+        await message.reply("You are not verified yet, proceed to /verify")
+    elif myresult == None:
         await message.reply("You are not registered, use /start to begin profile creation")
     else:
         #Create local booking object
@@ -1028,7 +1128,7 @@ async def unBookMoreHandler(call: types.CallbackQuery, state : FSMContext):
 
 
 #Leave this at bottom to catch unknown commands or text input by users
-@dp.message_handler()
+@dp.message_handler(state="*")
 async def echo(message: types.Message):
     """
     Message handler for catching unknown commands or text input by users.
@@ -1038,7 +1138,7 @@ async def echo(message: types.Message):
     """
     await message.reply("Unknown command, use / to check for available commands")
 
-@dp.callback_query_handler()
+@dp.callback_query_handler(state="*")
 async def echo1(call: types.CallbackQuery):
     """
     Callback query handler for catching callbacks from previous inline keyboard buttons.

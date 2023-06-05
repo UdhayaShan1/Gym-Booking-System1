@@ -1,0 +1,192 @@
+document.addEventListener("DOMContentLoaded", function() {
+    var emailCell = document.getElementById("email");
+    var nameCell = document.getElementById("name");
+    var roomCell = document.getElementById("room");
+    var spotterNameCell = document.getElementById("spotterName");
+    var spotterRoomCell = document.getElementById("spotterRoom");
+
+    fetch("/user_details")
+        .then(response => response.json())
+        .then(data => {
+            if (data.email === null) {
+                emailCell.textContent = "No Email Set";
+            } else {
+                emailCell.textContent = data.email;
+            }
+
+
+            if (data.name === null) {
+                nameCell.textContent = "No Name Set";
+            } else {
+                nameCell.textContent = data.name;
+            }
+
+
+            if (data.roomNo === null) {
+                roomCell.textContent = "No RC Room Number Set";
+            } else {
+                roomCell.textContent = data.roomNo;
+            }
+
+
+            if (data.spotterName === null) {
+                spotterNameCell.textContent = "No Spotter Name Set";
+            } else {
+                spotterNameCell.textContent = data.spotterName;
+            }
+
+
+            if (data.spotterRoomNo === null) {
+                spotterRoomCell.textContent = "No Spotter Room Number Set";
+            } else {
+                spotterRoomCell.textContent = data.spotterRoomNo;
+            }
+
+
+        })
+        .catch(error => {
+            console.error("Error", error);
+            window.alert(data.message);
+        });
+
+
+    var nameChange = document.getElementById("nameButton")
+    nameChange.addEventListener("click", function(event) {
+        event.preventDefault();
+        var nameText = document.createElement("input");
+        nameText.setAttribute("id", "nameText");
+        nameText.setAttribute("type", "text");
+
+        var nameSubmit = document.createElement("button");
+        nameSubmit.setAttribute("id", "nameSubmit");
+        nameSubmit.textContent = "Submit";
+
+        var checkFirst = document.querySelector("#name input");
+        if (!checkFirst) {
+            nameCell.appendChild(nameText);
+            nameCell.appendChild(nameSubmit);
+        }
+
+        nameSubmit.addEventListener("click", function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+            var newName = nameText.value;
+            if (newName.length == 0) {
+                window.alert("Empty name..")
+                return;
+            }
+            formData.append("name", nameText.value);
+            fetch("/update_name", {
+                method : "POST",
+                body : formData
+            })
+            .then(response => response.json())
+            .then(data => {window.alert(data.message);
+                if (data.status === "success") {
+                    nameCell.removeChild(nameText);
+                    nameCell.removeChild(nameSubmit)
+                    nameCell.textContent = newName;
+                }
+                else {
+                    window.location.href = "/profile";
+                }
+
+                
+            })
+        })
+
+    });
+
+    var roomChange = document.getElementById("roomButton")
+    roomChange.addEventListener("click", function(event) {
+        event.preventDefault();
+        var roomText = document.createElement("input");
+        roomText.setAttribute("id", "roomText");
+        roomText.setAttribute("type", "text");
+
+        var roomSubmit = document.createElement("button");
+        roomSubmit.setAttribute("id", "roomSubmit");
+        roomSubmit.textContent = "Submit";
+
+        var checkFirst = document.querySelector("#room input");
+        if (!checkFirst) {
+            roomCell.appendChild(roomText);
+            roomCell.appendChild(roomSubmit);
+        }
+
+        roomSubmit.addEventListener("click", function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+            var newRoom = roomText.value;
+            if (newRoom.length == 0) {
+                window.alert("Empty room number..")
+                return;
+            }
+            formData.append("room", newRoom);
+            fetch("/update_room", {
+                method : "POST",
+                body : formData
+            })
+            .then(response => response.json())
+            .then(data => {window.alert(data.message);
+                if (data.status === "success") {
+                    roomCell.removeChild(roomText);
+                    roomCell.removeChild(roomSubmit)
+                    roomCell.textContent = newRoom;
+                }
+                else {
+                    window.location.href = "/profile";
+                }   
+            })
+        })
+
+    });
+
+    var spotterChange = document.getElementById("spotterNameButton")
+    spotterChange.addEventListener("click", function(event) {
+        event.preventDefault();
+        var spotterText = document.createElement("input");
+        spotterText.setAttribute("id", "spotterText");
+        spotterText.setAttribute("type", "text");
+
+        var spotterSubmit = document.createElement("button");
+        spotterSubmit.setAttribute("id", "spotterSubmit");
+        spotterSubmit.textContent = "Submit";
+
+        var checkFirst = document.querySelector("#spotterName input");
+        if (!checkFirst) {
+            spotterNameCell.appendChild(spotterText);
+            spotterNameCell.appendChild(spotterSubmit);
+        }
+
+        spotterSubmit.addEventListener("click", function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+            var newSpotter = spotterText.value;
+            if (newSpotter.length == 0) {
+                window.alert("Empty spotter name..")
+                return;
+            }
+            formData.append("spotterName", spotterText.value);
+            fetch("/update_spotter", {
+                method : "POST",
+                body : formData
+            })
+            .then(response => response.json())
+            .then(data => {window.alert(data.message);
+                if (data.status === "success") {
+                    spotterNameCell.removeChild(spotterText);
+                    roomspotterNameCellCell.removeChild(spotterSubmit)
+                    spotterNameCell.textContent = newRoom;
+                }
+                else {
+                    window.location.href = "/profile";
+                }   
+            })
+        })
+
+    });
+
+
+
+});

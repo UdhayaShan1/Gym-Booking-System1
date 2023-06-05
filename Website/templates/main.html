@@ -3,54 +3,21 @@
 <head>
     <title>Main Page</title>
     <style>
-        /* CSS styles for the navigation bar */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
 
-        .navbar {
-            background-color: lightpink;
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
 
-        .navbar h1,
-        .navbar p {
-            margin: 0;
-            padding: 5px;
-        }
-
-        .navbar h1 {
-            font-size: 20px;
-        }
-
-        .navbar p {
-            font-size: 14px;
-            color: #777;
-        }
-
-        .navbar button {
-            padding: 10px 20px;
-            background-color: #333;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-
-        .navbar button:hover {
-            background-color: #555;
-        }
     </style>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
     <div class="navbar">
-        <h1>Welcome, <span id="email"></span></h1>
+        <h1>Welcome! <span id="email"></span></h1>
+        <button id="profileButton">Profile</button>
+        <button id="bookingButton">Booking</button>
         <button id="logoutButton">Logout</button>
+    </div>
+    <div class="container">
+        <h1>Welcome to FitBook</h1>
+        <h2 id="profileDirector">Create your user profile first by clicking 'Profile'</h2>
     </div>
 </body>
 </html>

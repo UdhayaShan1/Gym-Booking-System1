@@ -22,10 +22,10 @@ db = mysql.connector.connect(
     host="localhost",
     user='root',
     passwd=pwd,
-    database="testdatabase"
+    database="testdatabase",
+    connect_timeout=30
 )
 
-mycursor = db.cursor()
 
 #Flask set-up
 app = Flask(__name__)
@@ -69,8 +69,10 @@ def send_otp():
     email_receiver = request.form['email']
     sqlFormula = "SELECT * FROM user_website WHERE email = %s"
     data = (email_receiver, )
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
+    mycursor.close()
     if myresult != None:
         return jsonify({"status" : "failure", "message" : "Already registered"})
 
@@ -97,7 +99,6 @@ def send_otp():
 
 @app.route('/register', methods=["POST", "GET"])
 def register():
-    #print(request.method)
     if request.method == "POST":
         email = request.form['email']
         password = request.form['password']
@@ -105,29 +106,41 @@ def register():
         print(session)
         if "otp" not in session or session["otp"] != otp:
             return jsonify({"status": "failure", "message": "Wrong OTP, try again"})
-        # Make a regular expression
-        # for validating an Email
         if check(email) == False:
             return jsonify({"status": "failure", "message": "Invalid email format"})
-        # Hash the password for security
-        hashed_password = bcrypt.hashpw(
-            password.encode('utf-8'), bcrypt.gensalt())
-        # Check if registered alr
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         sqlFormula = "SELECT * FROM user_website WHERE email = %s"
         data = (email, )
+        mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
+        mycursor.close()
         if len(myresult) > 0:
             return jsonify({"status": "success", "message": "You are registered already, proceed to login!"})
 
+        # Establish a new connection and cursor
+        db_new = mysql.connector.connect(
+            host="localhost",
+            user='root',
+            passwd=pwd,
+            database="testdatabase",
+            connect_timeout=30
+        )
+        cursor = db_new.cursor()
+
         sqlFormula = "INSERT INTO user_website (email, password) VALUES (%s, %s)"
         data = (email, hashed_password)
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-        mycursor.close()
+        cursor.execute(sqlFormula, data)
+        db_new.commit()
+
+        # Close the cursor and database connection
+        cursor.close()
+        db_new.close()
+
         return jsonify({"status": "success", "message": "You are now registered"})
 
     return render_template("register.html")
+
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
@@ -138,11 +151,15 @@ def login():
         password = request.form['password']
         sqlFormula = "SELECT * FROM user_website WHERE email = %s"
         data = (email, )
+        mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
+        mycursor.close()
+        #print(session)
         if len(myresult) == 0:
             return jsonify({"status" : "failure", "message" : "You have not registered"})
         if bcrypt.checkpw(password.encode("utf-8"), myresult[0][1].encode("utf-8")):
+            session.clear()
             session['email'] = email
             return jsonify({"status" : "success", "message" : "You have logged in!"})
 
@@ -163,15 +180,82 @@ def logout():
     session.clear()
     return jsonify({"status" : "success", "message" : "You have logged out"})
 
-@app.route('/user_details', methods = ["POST"])
+@app.route('/user_details')
 def userdetails():
     if "email" not in session:
         return redirect("/")
     sqlFormula = "SELECT * FROM user_website WHERE email = %s"
     data = (session["email"], )
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
-    return jsonify({"email" :  session["email"]})
+    mycursor.close()
+    return jsonify({"email" :  session["email"], 
+                    "name" : myresult[2], 
+                    "roomNo" : myresult[3],
+                    "spotterName" : myresult[4],
+                    "spotterRoomNo" : myresult[5]})
+
+@app.route('/profile')
+def profile():
+    if "email" not in session:
+        return redirect("/")
+    return render_template("profile.html")
+
+@app.route('/update_name', methods=["POST"])
+def update_name():
+    if request.method == "POST":
+        name = request.form["name"]
+        mycursor = db.cursor()
+        sqlFormula = "UPDATE user_website SET name = %s WHERE email = %s"
+        data = (name, session["email"], )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        mycursor.close()
+        return jsonify({"status" : "success", "message" : "Name updated"})
+    return jsonify({"status" : "failure", "message" : "Error in submission, try again"})
+
+@app.route('/update_room', methods=["POST"])
+def update_room():
+    if request.method == "POST":
+        room = request.form["room"]
+        mycursor = db.cursor()
+        sqlFormula = "UPDATE user_website SET roomNo = %s WHERE email = %s"
+        data = (room, session["email"], )
+        print(data)
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        mycursor.close()
+        return jsonify({"status" : "success", "message" : "Room number updated"})
+    return jsonify({"status" : "failure", "message" : "Error in submission, try again"})
+
+@app.route('/update_spotter', methods=["POST"])
+def update_spotter():
+    if request.method == "POST":
+        spotter = request.form["spotterName"]
+        mycursor = db.cursor()
+        sqlFormula = "UPDATE user_website SET spotterName = %s WHERE email = %s"
+        data = (spotter, session["email"], )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        mycursor.close()
+        return jsonify({"status" : "success", "message" : "Spotter name updated"})
+    return jsonify({"status" : "failure", "message" : "Error in submission, try again"})
+
+@app.route('/update_spotter_room', methods=["POST"])
+def update_spotterRoom():
+    if request.method == "POST":
+        spotterRoom = request.form["spotterRoom"]
+        mycursor = db.cursor()
+        sqlFormula = "UPDATE user_website SET spotterRoomNo = %s WHERE email = %s"
+        data = (spotterRoom, session["email"], )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        mycursor.close()
+        return jsonify({"status" : "success", "message" : "Spotter room number updated"})
+    return jsonify({"status" : "failure", "message" : "Error in submission, try again"})
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
