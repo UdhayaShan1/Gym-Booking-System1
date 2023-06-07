@@ -176,8 +176,8 @@ document.addEventListener("DOMContentLoaded", function() {
             .then(data => {window.alert(data.message);
                 if (data.status === "success") {
                     spotterNameCell.removeChild(spotterText);
-                    roomspotterNameCellCell.removeChild(spotterSubmit)
-                    spotterNameCell.textContent = newRoom;
+                    spotterNameCell.removeChild(spotterSubmit)
+                    spotterNameCell.textContent = newSpotter;
                 }
                 else {
                     window.location.href = "/profile";
@@ -187,6 +187,50 @@ document.addEventListener("DOMContentLoaded", function() {
 
     });
 
+    var spotterRoomChange = document.getElementById("spotterRoomButton")
+    spotterRoomChange.addEventListener("click", function(event) {
+        event.preventDefault();
+        var spotterRoomText = document.createElement("input");
+        spotterRoomText.setAttribute("id", "spotterRoomText");
+        spotterRoomText.setAttribute("type", "text");
+
+        var spotterRoomSubmit = document.createElement("button");
+        spotterRoomSubmit.setAttribute("id", "spotterRoomSubmit");
+        spotterRoomSubmit.textContent = "Submit";
+
+        var checkFirst = document.querySelector("#spotterRoom input");
+        if (!checkFirst) {
+            spotterRoomCell.appendChild(spotterRoomText);
+            spotterRoomCell.appendChild(spotterRoomSubmit);
+        }
+
+        spotterRoomSubmit.addEventListener("click", function(event) {
+            event.preventDefault();
+            var formData = new FormData();
+            var newSpotterRoom = spotterRoomText.value;
+            if (newSpotterRoom.length == 0) {
+                window.alert("Empty spotter room number..")
+                return;
+            }
+            formData.append("spotterRoom", spotterRoomText.value);
+            fetch("/update_spotter_room", {
+                method : "POST",
+                body : formData
+            })
+            .then(response => response.json())
+            .then(data => {window.alert(data.message);
+                if (data.status === "success") {
+                    spotterRoomCell.removeChild(spotterRoomText);
+                    spotterRoomCell.removeChild(spotterRoomSubmit)
+                    spotterRoomCell.textContent = newSpotterRoom;
+                }
+                else {
+                    window.location.href = "/profile";
+                }   
+            })
+        })
+
+    });
 
 
 });

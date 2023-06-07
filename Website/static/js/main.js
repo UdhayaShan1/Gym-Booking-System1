@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("profileDirector").textContent = "It appears your profile is not set, click Profile above!";
         }
         else {
-            document.getElementById("email").textContent = ", " + data.name;
+            document.getElementById("email").textContent = data.name;
         }
     })
     .catch(error => {console.error("Error", error)});

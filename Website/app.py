@@ -97,20 +97,28 @@ def send_otp():
         smtp.sendmail(email_sender, email_receiver, em.as_string())
     return jsonify({"status" : "success", "message" : "sent"})
 
+#Use regular expressions to check if email follows NUS format
+def check_email(email):
+    pattern = r'^e\d{7}@u\.nus\.edu$'  # Regex pattern for the email format
+    match = re.match(pattern, email)
+    return match is not None
+
+
 @app.route('/register', methods=["POST", "GET"])
 def register():
     if request.method == "POST":
         email = request.form['email']
         password = request.form['password']
         otp = request.form['otp']
-        print(session)
+        if check_email(email.lower()) == False:
+            return jsonify({"status" : "failure", "message" : "Use NUS email only"})
         if "otp" not in session or session["otp"] != otp:
             return jsonify({"status": "failure", "message": "Wrong OTP, try again"})
         if check(email) == False:
             return jsonify({"status": "failure", "message": "Invalid email format"})
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         sqlFormula = "SELECT * FROM user_website WHERE email = %s"
-        data = (email, )
+        data = (email.lower(), )
         mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
@@ -128,8 +136,8 @@ def register():
         )
         cursor = db_new.cursor()
 
-        sqlFormula = "INSERT INTO user_website (email, password) VALUES (%s, %s)"
-        data = (email, hashed_password)
+        sqlFormula = "INSERT INTO user_website (email, password, nusnet) VALUES (%s, %s, %s)"
+        data = (email.lower(), hashed_password, email.lower()[:8])
         cursor.execute(sqlFormula, data)
         db_new.commit()
 
@@ -145,7 +153,7 @@ def register():
 @app.route('/login', methods=["POST", "GET"])
 def login():
     if request.method == "POST":
-        email = request.form['email']
+        email = request.form['email'].lower()
         if check(email) == False:
             return jsonify({"status" : "failure", "message" : "Invalid email format"})
         password = request.form['password']
@@ -155,6 +163,7 @@ def login():
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
         mycursor.close()
+        print(myresult)
         #print(session)
         if len(myresult) == 0:
             return jsonify({"status" : "failure", "message" : "You have not registered"})
@@ -184,15 +193,15 @@ def logout():
 def userdetails():
     if "email" not in session:
         return redirect("/")
-    sqlFormula = "SELECT * FROM user_website WHERE email = %s"
-    data = (session["email"], )
+    sqlFormula = "SELECT * FROM user WHERE nusnet = %s"
+    data = (session["email"][:8], )
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     mycursor.close()
     return jsonify({"email" :  session["email"], 
-                    "name" : myresult[2], 
-                    "roomNo" : myresult[3],
+                    "name" : myresult[3], 
+                    "roomNo" : myresult[2],
                     "spotterName" : myresult[4],
                     "spotterRoomNo" : myresult[5]})
 
@@ -207,22 +216,32 @@ def update_name():
     if request.method == "POST":
         name = request.form["name"]
         mycursor = db.cursor()
-        sqlFormula = "UPDATE user_website SET name = %s WHERE email = %s"
-        data = (name, session["email"], )
+        sqlFormula = "UPDATE user SET name = %s WHERE nusnet = %s"
+        data = (name, session["email"][0:8], )
         mycursor.execute(sqlFormula, data)
         db.commit()
         mycursor.close()
         return jsonify({"status" : "success", "message" : "Name updated"})
     return jsonify({"status" : "failure", "message" : "Error in submission, try again"})
 
+#Room number validation
+def check_string_format(string):
+    pattern = r"^\d{2}-\d{2}[a-zA-Z]?$"
+    if re.match(pattern, string):
+        return True
+    else:
+        return False
+
 @app.route('/update_room', methods=["POST"])
 def update_room():
     if request.method == "POST":
         room = request.form["room"]
+        if check_string_format(room) == False:
+            return jsonify({"status" : "failure", "message" : "Invalid room number format, ensure it is XX-YY or XX-YYD"})
         mycursor = db.cursor()
-        sqlFormula = "UPDATE user_website SET roomNo = %s WHERE email = %s"
-        data = (room, session["email"], )
-        print(data)
+        sqlFormula = "UPDATE user SET roomNo = %s WHERE nusnet = %s"
+        data = (room, session["email"][0:8], )
+        #print(data)
         mycursor.execute(sqlFormula, data)
         db.commit()
         mycursor.close()
@@ -234,8 +253,8 @@ def update_spotter():
     if request.method == "POST":
         spotter = request.form["spotterName"]
         mycursor = db.cursor()
-        sqlFormula = "UPDATE user_website SET spotterName = %s WHERE email = %s"
-        data = (spotter, session["email"], )
+        sqlFormula = "UPDATE user SET spotterName = %s WHERE nusnet = %s"
+        data = (spotter, session["email"][0:8], )
         mycursor.execute(sqlFormula, data)
         db.commit()
         mycursor.close()
@@ -246,9 +265,11 @@ def update_spotter():
 def update_spotterRoom():
     if request.method == "POST":
         spotterRoom = request.form["spotterRoom"]
+        if check_string_format(spotterRoom) == False:
+            jsonify({"status" : "failure", "message" : "Invalid room number format, ensure it is XX-YY or XX-YYD"})
         mycursor = db.cursor()
-        sqlFormula = "UPDATE user_website SET spotterRoomNo = %s WHERE email = %s"
-        data = (spotterRoom, session["email"], )
+        sqlFormula = "UPDATE user SET spotterRoomNo = %s WHERE nusnet = %s"
+        data = (spotterRoom, session["email"][0:8], )
         mycursor.execute(sqlFormula, data)
         db.commit()
         mycursor.close()
