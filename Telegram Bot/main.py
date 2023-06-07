@@ -160,6 +160,7 @@ async def start(message: types.Message, state : FSMContext):
     await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.6 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
+    """
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (user_id, )
     mycursor.execute(sqlFormula, data)
@@ -173,6 +174,9 @@ async def start(message: types.Message, state : FSMContext):
         user = User(user_id)
         users[user_id] = user
         await state.set_state(Form.set_nusnet)
+    """
+    await message.reply("Okay, first begin by typing your NUSNET id to check if your profile is created! 👍")
+    await state.set_state(Form.set_nusnet)
 
 #Check if valid nusnet id
 def validnusNet(input_string):
@@ -183,14 +187,34 @@ def validnusNet(input_string):
 
 @dp.message_handler(state=Form.set_nusnet)
 async def set_nusnet(message: types.Message, state : FSMContext):
+    users[message.from_user.id] = User(message.from_user.id)
     user = users[message.from_user.id]
+    #user = users[message.from_user.id]
     nusnet = str(message.text).lower()
     if validnusNet(nusnet) == False:
         await message.reply("Please type valid NUSNET id!")
     else:
-        user.nusnet = nusnet
-        await message.reply("Okay, what is your name?")
-        await state.set_state(Form.set_name)
+        sqlFormula = "SELECT * FROM user WHERE nusnet = %s"
+        data = (nusnet, )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchone()
+
+
+        sqlFormula = "SELECT * FROM user WHERE nusnet = %s AND name IS NOT NULL AND roomNo IS NOT NULL AND spotterName IS NOT NULL AND spotterRoomNo IS NOT NULL;"
+        data = (nusnet, )
+        mycursor.execute(sqlFormula, data)
+        myresult1 = mycursor.fetchone()
+        if myresult == None:
+            user.nusnet = nusnet
+            await message.reply("You have not been registered yet! Begin by typing your name")
+            await state.set_state(Form.set_name)
+        elif myresult1 == None:
+            user.nusnet = nusnet
+            await message.reply("Your profile creation has not been completed! Begin by typing your name")
+            await state.set_state(Form.set_name)
+        else:
+            await message.reply("You have already been registered! Use /myinfo to check again")
+            await state.finish()
 
 # Generate a random OTP
 async def generate_otp():
@@ -310,11 +334,21 @@ async def set_spotter_room(message: types.Message, state : FSMContext):
     s = message.text
     if check_string_format(s):
         user.spotter_room = s
-        #Insert into SQL database
-        sqlFormula = "INSERT INTO user (teleId, roomNo, name, spotterName, spotterRoomNo, nusnet) VALUES (%s, %s, %s, %s, %s, %s)"
-        data = (message.from_user.id, user.room, user.name, user.spotter_name, user.spotter_room, user.nusnet)
+        sqlFormula = "SELECT * FROM user WHERE nusnet = %s"
+        data = (user.nusnet, )
         mycursor.execute(sqlFormula, data)
-        db.commit()
+        myresult = mycursor.fetchone()
+        if myresult == None:
+            #Insert into SQL database
+            sqlFormula = "INSERT INTO user (teleId, roomNo, name, spotterName, spotterRoomNo, nusnet) VALUES (%s, %s, %s, %s, %s, %s)"
+            data = (message.from_user.id, user.room, user.name, user.spotter_name, user.spotter_room, user.nusnet)
+            mycursor.execute(sqlFormula, data)
+            db.commit()
+        else:
+            sqlFormula = "UPDATE user SET teleId = %s, roomNo = %s, name = %s, spotterName = %s, spotterRoomNo = %s WHERE nusnet = %s"
+            data = (message.from_user.id, user.room, user.name, user.spotter_name, user.spotter_room, user.nusnet, )
+            mycursor.execute(sqlFormula, data)
+            db.commit()
         await message.reply("Okay info set, check via /myinfo")
         await state.finish()
     else:
@@ -1123,8 +1157,6 @@ async def unBookMoreHandler(call: types.CallbackQuery, state : FSMContext):
     else:
         await call.message.answer("Okay exiting! Thank you")
         await state.finish()
-
-
 
 
 #Leave this at bottom to catch unknown commands or text input by users

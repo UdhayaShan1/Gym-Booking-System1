@@ -17,4 +17,6 @@
 2) Reshaped how we integrate the database interaction, decided to centralise to the database the bot uses.
 
 0.5.1
-1) Finished profile creation
+1) Finished profile creation.
+2) Reshaped registration and login to centre around nusnet id instead to sync properly.
+3) Fixed some bugs regarding mySQL connection.

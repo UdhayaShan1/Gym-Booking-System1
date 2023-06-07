@@ -232,5 +232,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     });
 
+    var backButton = document.getElementById("goBack");
+    backButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/main";
+    });
+
 
 });

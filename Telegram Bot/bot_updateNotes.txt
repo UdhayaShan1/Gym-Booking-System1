@@ -27,3 +27,7 @@ the relevant slots to be vacant.)
 0.2.5
 1) Added NUSNET field.
 2) Added OTP verification to ensure they are NUS students.
+
+0.2.6
+1) Fixed bugs
+2) Updated registration logic as reshaped the framework to sync properly with website (basically we centre around nusnet id now)

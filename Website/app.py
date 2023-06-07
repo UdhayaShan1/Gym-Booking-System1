@@ -126,26 +126,25 @@ def register():
         if len(myresult) > 0:
             return jsonify({"status": "success", "message": "You are registered already, proceed to login!"})
 
-        # Establish a new connection and cursor
-        db_new = mysql.connector.connect(
-            host="localhost",
-            user='root',
-            passwd=pwd,
-            database="testdatabase",
-            connect_timeout=30
-        )
-        cursor = db_new.cursor()
-
-        sqlFormula = "INSERT INTO user_website (email, password, nusnet) VALUES (%s, %s, %s)"
+        sqlFormula_insert = "INSERT INTO user_website (email, password, nusnet) VALUES (%s, %s, %s)"
         data = (email.lower(), hashed_password, email.lower()[:8])
-        cursor.execute(sqlFormula, data)
-        db_new.commit()
-
-        # Close the cursor and database connection
-        cursor.close()
-        db_new.close()
-
-        return jsonify({"status": "success", "message": "You are now registered"})
+        print(data)
+        mycursor = db.cursor()
+        mycursor.execute(sqlFormula_insert, data)
+        db.commit()
+        
+        sqlFormula_checkTele = "SELECT * from user WHERE nusnet = %s"
+        sqlFormula_insert = "INSERT INTO user (nusnet) VALUES (%s)"
+        data = (email.lower()[0:8], )
+        mycursor.execute(sqlFormula_checkTele, data)
+        myresult = mycursor.fetchone()
+        print(myresult)
+        if myresult != None:
+            return jsonify({"status": "success", "message": "You are now registered"})
+        else:
+            mycursor.execute(sqlFormula_insert, data)
+            db.commit()
+            return jsonify({"status": "success", "message": "You are now registered"})
 
     return render_template("register.html")
 
@@ -154,6 +153,7 @@ def register():
 def login():
     if request.method == "POST":
         email = request.form['email'].lower()
+        print(email)
         if check(email) == False:
             return jsonify({"status" : "failure", "message" : "Invalid email format"})
         password = request.form['password']
@@ -164,7 +164,6 @@ def login():
         myresult = mycursor.fetchall()
         mycursor.close()
         print(myresult)
-        #print(session)
         if len(myresult) == 0:
             return jsonify({"status" : "failure", "message" : "You have not registered"})
         if bcrypt.checkpw(password.encode("utf-8"), myresult[0][1].encode("utf-8")):
@@ -175,6 +174,7 @@ def login():
         return jsonify({"status" : "failure", "message" : "Wrong password"}) 
 
     return render_template("login.html")
+
 
 @app.route('/main')
 def main():
@@ -193,12 +193,19 @@ def logout():
 def userdetails():
     if "email" not in session:
         return redirect("/")
+    #print(session["email"][:8])
     sqlFormula = "SELECT * FROM user WHERE nusnet = %s"
     data = (session["email"][:8], )
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     mycursor.close()
+    if myresult == None:
+            return jsonify({"email" :  session["email"], 
+                    "name" : None, 
+                    "roomNo" : None,
+                    "spotterName" : None,
+                    "spotterRoomNo" : None})
     return jsonify({"email" :  session["email"], 
                     "name" : myresult[3], 
                     "roomNo" : myresult[2],
@@ -266,7 +273,7 @@ def update_spotterRoom():
     if request.method == "POST":
         spotterRoom = request.form["spotterRoom"]
         if check_string_format(spotterRoom) == False:
-            jsonify({"status" : "failure", "message" : "Invalid room number format, ensure it is XX-YY or XX-YYD"})
+            return jsonify({"status" : "failure", "message" : "Invalid room number format, ensure it is XX-YY or XX-YYD"})
         mycursor = db.cursor()
         sqlFormula = "UPDATE user SET spotterRoomNo = %s WHERE nusnet = %s"
         data = (spotterRoom, session["email"][0:8], )
