@@ -11,6 +11,7 @@ import string
 from flask_login import LoginManager, login_user, current_user, login_required, UserMixin, logout_user
 import mysql.connector
 from flask_session import Session
+from datetime import datetime, timedelta
 
 
 # Database connection, we will use mySQL and localhost for now
@@ -140,12 +141,13 @@ def register():
         myresult = mycursor.fetchone()
         print(myresult)
         if myresult != None:
+            mycursor.close()
             return jsonify({"status": "success", "message": "You are now registered"})
         else:
             mycursor.execute(sqlFormula_insert, data)
+            mycursor.close()
             db.commit()
             return jsonify({"status": "success", "message": "You are now registered"})
-
     return render_template("register.html")
 
 
@@ -172,7 +174,8 @@ def login():
             return jsonify({"status" : "success", "message" : "You have logged in!"})
 
         return jsonify({"status" : "failure", "message" : "Wrong password"}) 
-
+    if "email" in session:
+        return redirect("/main")
     return render_template("login.html")
 
 
@@ -282,6 +285,99 @@ def update_spotterRoom():
         mycursor.close()
         return jsonify({"status" : "success", "message" : "Spotter room number updated"})
     return jsonify({"status" : "failure", "message" : "Error in submission, try again"})
+
+@app.route('/booking_page')
+def booking_page():
+    if "email" not in session:
+        return redirect("/")
+    return render_template("booking/booking.html")
+
+@app.route('/fetch_dates', methods=["POST","GET"])
+def fetch_dates():
+    if request.method != "POST":
+        return redirect("/")
+    curr_date = datetime.now().date()
+    dates = [curr_date + timedelta(days=i) for i in range(14)]
+    dates_str = []
+    for i in dates:
+        dates_str.append(str(i))
+    return jsonify(dates_str)
+
+@app.route('/selected_date', methods=["POST","GET"])
+def selected_date():
+    if request.method != "POST":
+        return redirect("/")
+    session["date"] = request.form.get("date")
+    return jsonify({"status" : "success", "message" : "Selected"})
+
+@app.route('/booking_times')
+def booking_times():
+    if "date" not in session:
+        return redirect("/")
+    print(session)
+    return render_template("booking/booking_times.html")
+
+@app.route('/fetch_times')
+def fetch_times():
+    curr_date = datetime.now().date()
+    date_selected = datetime.strptime(session["date"], "%Y-%m-%d").date()
+    mycursor = db.cursor()
+    if curr_date == date_selected:
+        current_time = datetime.now().time().strftime("%H:%M:%S")
+        #print(current_time)
+        sqlFormula = "SELECT * FROM booking_slots WHERE date = %s AND timeslot > %s"
+        data = (str(curr_date), current_time, )
+
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        #print(myresult)
+        if len(myresult) == 0:
+            mycursor.close()
+            return jsonify({"status" : "failure", "message" : "No more slots for the day"})
+        else:
+            dict = {}
+            for i in myresult:
+                dict[str(i[2])] = i[-3]
+            print(dict)
+            mycursor.close()
+            return jsonify({"status" : "success", "result" : dict})
+    else:
+        sqlFormula = "SELECT * FROM booking_slots WHERE date = %s"
+        data = (date_selected, )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        dict = {}
+        for i in myresult:
+            dict[str(i[2])] = i[3]
+        mycursor.close()
+        return jsonify({"status" : "success", "result" : dict})
+    
+@app.route('/selected_time', methods=["POST"])
+def selected_time():
+
+    if request.method != "POST":
+        return redirect("/")
+    mycursor = db.cursor()
+    session["time"] = request.form.get("time")
+    sqlFormula = "SELECT * FROM booking_slots WHERE assoc_nusnet = %s AND date = %s"
+    data = (session["email"][0:8], session["date"], )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    if len(myresult) >= 3:
+        mycursor.close()
+        return jsonify({"status" : "failure", "message" : "You have booked the maximum slots for that day"})
+    else:
+        sqlFormula = "UPDATE booking_slots SET is_booked = 1, assoc_nusnet = %s WHERE timeslot = %s AND date = %s"
+        data = (session["email"][0:8], session["time"], session["date"], )
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        mycursor.close()
+        return jsonify({"status" : "success", "message" : "Slot has been booked!"})
+
+
+
+
+
 
 
 

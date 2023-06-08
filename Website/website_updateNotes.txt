@@ -20,3 +20,8 @@
 1) Finished profile creation.
 2) Reshaped registration and login to centre around nusnet id instead to sync properly.
 3) Fixed some bugs regarding mySQL connection.
+
+0.6.0
+1) Added ability to view dates and available timeslots for that date.
+2) Added ability to book slots up to 3 maximum per day.
+3) Updated login logic so user is redirected to main if and only if (!clicked logged_out).

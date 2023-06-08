@@ -31,3 +31,6 @@ the relevant slots to be vacant.)
 0.2.6
 1) Fixed bugs
 2) Updated registration logic as reshaped the framework to sync properly with website (basically we centre around nusnet id now)
+
+0.2.7
+1) Fixed some oversights.

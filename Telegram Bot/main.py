@@ -136,6 +136,14 @@ async def exit(message: types.Message, state: FSMContext):
         await message.reply("Okay, left current state. Use / to continue with available commands")
     await state.finish()
 
+def nusnetRetriever(id):
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (id, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    return myresult[-2]
+
+
 #Probably will use to handle user familirization with bot
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message, state : FSMContext):
@@ -157,7 +165,7 @@ async def start(message: types.Message, state : FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.6 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.7 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     """
@@ -581,12 +589,19 @@ async def deleteMyDetails(message: types.Message, state : FSMContext):
     keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(button1).add(button2)
     """
 
-    #Attempt at InLineKeyboard instead
-    button3 = InlineKeyboardButton(text="Yes!", callback_data="Yes!")
-    button4 = InlineKeyboardButton(text="No!", callback_data="No!")
-    keyboard2 = InlineKeyboardMarkup().add(button3).add(button4)
-    await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our mySQL database and any attached bookings", reply_markup=keyboard2)
-    await state.set_state(Form.delete_details)
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (message.from_user.id, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    if myresult == None:
+        await message.reply("You are not registered in the system.")
+    else:
+        #Attempt at InLineKeyboard instead
+        button3 = InlineKeyboardButton(text="Yes!", callback_data="Yes!")
+        button4 = InlineKeyboardButton(text="No!", callback_data="No!")
+        keyboard2 = InlineKeyboardMarkup().add(button3).add(button4)
+        await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our mySQL database and any attached bookings", reply_markup=keyboard2)
+        await state.set_state(Form.delete_details)
 
 """
 @dp.message_handler(state=Form.delete_details)
@@ -616,13 +631,14 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
         state (FSMContext): The state object for managing conversation state.
     """
     if call.data == "Yes!":
-        sqlFormula = "DELETE FROM user WHERE teleId = %s"
-        data = (call.from_user.id, )
+        nusnet = nusnetRetriever(call.from_user.id)
+        sqlFormula = "UPDATE user SET teleId = %s, roomNo = %s, name = %s, spotterName = %s, spotterRoomNo = %s, verifiedTele = 0 WHERE teleId = %s"
+        data = (None, None, None, None, None, call.from_user.id, )
         mycursor.execute(sqlFormula, data)
         db.commit()
         
-        sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s WHERE assoc_teleId = %s"
-        mycursor.execute(sqlFormula, (None, call.from_user.id, ))
+        sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s, assoc_nusnet = %s WHERE (assoc_teleId = %s OR assoc_nusnet = %s)"
+        mycursor.execute(sqlFormula, (None, None, call.from_user.id, nusnet, ))
         db.commit()
         await call.message.answer("Data deleted, use /start to begin user creation again")
     else:
@@ -680,7 +696,7 @@ async def book(message: types.Message, state: FSMContext):
     data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
-    if myresult[-1] == 0:
+    if myresult != None and myresult[-1] == 0:
         await message.reply("You are not verified yet, proceed to /verify")
     elif myresult == None:
         await message.reply("You are not registered, use /start to begin profile creation")
@@ -980,8 +996,8 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
         if myresult == None or len(myresult) <= 2:
-            sqlFormula = "UPDATE booking_slots SET is_booked = 1, assoc_teleId = %s WHERE timeslot = %s AND date = %s"
-            data = (call.from_user.id, str(call.data)[5:], booking_obj.date, )
+            sqlFormula = "UPDATE booking_slots SET is_booked = 1, assoc_teleId = %s, assoc_nusnet = %s WHERE timeslot = %s AND date = %s"
+            data = (call.from_user.id, nusnetRetriever(call.from_user.id), str(call.data)[5:], booking_obj.date, )
             mycursor.execute(sqlFormula, data)
             db.commit()
             await call.message.answer("Okay booked at " + booking_obj.date + " " + booking_obj.time + "\nEnjoy your workout!")
@@ -1045,15 +1061,15 @@ async def checkMyGymSlots(message: types.Message):
     """
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date = %s AND timeslot > %s"
-    data = (message.from_user.id, str(curr_date), str(curr_time), )
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
+    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), str(curr_time), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     res = []
     for i in myresult:
         res.append(i)
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date > %s"
-    data = (message.from_user.id, str(curr_date), )
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date > %s"
+    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     for i in myresult:
@@ -1071,15 +1087,15 @@ async def checkMyGymSlots(message: types.Message):
 async def unBook(message: types.Message, state : FSMContext):
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date = %s AND timeslot > %s"
-    data = (message.from_user.id, str(curr_date), str(curr_time), )
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
+    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), str(curr_time), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     res = []
     for i in myresult:
         res.append(i)
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date > %s"
-    data = (message.from_user.id, str(curr_date), )
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date > %s"
+    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     for i in myresult:
@@ -1104,15 +1120,15 @@ async def unBook(message: types.Message, state : FSMContext):
 async def unBookCycle(message: types.Message, state : FSMContext, id):
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date = %s AND timeslot > %s"
-    data = (id, str(curr_date), str(curr_time), )
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
+    data = (id, nusnetRetriever(id), str(curr_date), str(curr_time), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     res = []
     for i in myresult:
         res.append(i)
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_teleId = %s AND date > %s"
-    data = (id, str(curr_date), )
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date > %s"
+    data = (id, nusnetRetriever(id), str(curr_date), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     for i in myresult:
@@ -1137,8 +1153,8 @@ async def unBookCycle(message: types.Message, state : FSMContext, id):
 async def unBookHandler(call: types.CallbackQuery, state : FSMContext):
     date = str(call.data.split()[0])
     time = str(call.data.split()[1])
-    sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s WHERE date = %s AND timeslot = %s"
-    mycursor.execute(sqlFormula, (None, date, time, ))
+    sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s, assoc_nusnet = %s WHERE date = %s AND timeslot = %s AND (assoc_teleId = %s OR assoc_nusnet = %s)"
+    mycursor.execute(sqlFormula, (None, None, date, time, call.from_user.id, nusnetRetriever(call.from_user.id), ))
     db.commit()
     await call.message.answer("Okay unbooked slot at " + date + " " + time)
     responses = ["Yes", "No"]

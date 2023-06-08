@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById("profileDirector").textContent = "It appears your profile is not set, click Profile above!";
         }
         else {
+            document.getElementById("profileDirector").textContent = "Proceed to book by clicking Booking!";
             document.getElementById("email").textContent = data.name;
         }
     })
@@ -39,7 +40,11 @@ document.addEventListener("DOMContentLoaded", function() {
         window.location.href = "/profile";
     })
 
-    
+    var bookingButton = document.getElementById("bookingButton");
+    bookingButton.addEventListener("click", function(event) {
+        event.preventDefault()
+        window.location.href = "/booking_page";
+    })
 
     
 
