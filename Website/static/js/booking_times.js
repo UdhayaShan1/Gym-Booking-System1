@@ -35,9 +35,34 @@ document.addEventListener("DOMContentLoaded", function() {
             timeContainer.appendChild(timeButton);
           }
         }
+        else {
+          window.alert(data.message);
+          window.location.href = "/booking_page";
+        }
       })
       .catch(error => {
         console.error("Error", error);
       });
+
+    var backButton = document.getElementById("backButton");
+    backButton.addEventListener("click", function(event) {
+      event.preventDefault();
+      window.location.href = "/booking_page";
+    });
+
+    var logoutButton = document.getElementById("logout");
+    logoutButton.addEventListener("click", function(event) {
+      event.preventDefault();
+      fetch("/logout", {
+        method: "POST"
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          window.alert(data.message)
+          window.location.href = "/";
+        }
+      })
+    })
   });
   

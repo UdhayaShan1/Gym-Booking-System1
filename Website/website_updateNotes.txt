@@ -24,4 +24,10 @@
 0.6.0
 1) Added ability to view dates and available timeslots for that date.
 2) Added ability to book slots up to 3 maximum per day.
-3) Updated login logic so user is redirected to main if and only if (!clicked logged_out).
+3) Updated login logic so user is redirected to main if and only if (!clicked logged_out).4
+
+0.6.1
+1) Check if profile is completed first before user is able to access /booking_page.
+2) Added ability to check booked slots.
+3) Added ability to unbook slots.
+4) Technically we are done with the fundamental features.

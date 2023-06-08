@@ -38,13 +38,33 @@ document.addEventListener("DOMContentLoaded", function() {
     profileButton.addEventListener("click", function(event) {
         event.preventDefault();
         window.location.href = "/profile";
-    })
+    });
 
     var bookingButton = document.getElementById("bookingButton");
     bookingButton.addEventListener("click", function(event) {
         event.preventDefault()
-        window.location.href = "/booking_page";
-    })
+        fetch("/profile_completed")
+        .then(response => response.json())
+        .then(data => 
+            {
+                if (data.status === "success") {
+                    window.location.href = "/booking_page";
+                }
+                else {
+                    window.alert(data.message)
+                    window.location.href = "/profile"
+                }
+            })
+        .catch(error => {console.error("Error", error);
+        window.alert("Error, try again");
+        })
+    });
+
+    var editBookingButton = document.getElementById("editBookingButton");
+    editBookingButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/edit_bookings";
+    });
 
     
 

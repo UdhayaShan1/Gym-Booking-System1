@@ -330,7 +330,7 @@ def fetch_times():
 
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
-        #print(myresult)
+        print(myresult)
         if len(myresult) == 0:
             mycursor.close()
             return jsonify({"status" : "failure", "message" : "No more slots for the day"})
@@ -354,7 +354,6 @@ def fetch_times():
     
 @app.route('/selected_time', methods=["POST"])
 def selected_time():
-
     if request.method != "POST":
         return redirect("/")
     mycursor = db.cursor()
@@ -374,12 +373,68 @@ def selected_time():
         mycursor.close()
         return jsonify({"status" : "success", "message" : "Slot has been booked!"})
 
+@app.route('/profile_completed')
+def profile_completed():
+    sqlFormula = sqlFormula = "SELECT * FROM user WHERE nusnet = %s AND roomNo IS NOT NULL AND name IS NOT NULL AND spotterName IS NOT NULL AND spotterRoomNo IS NOT NULL"
+    data = (session["email"][0:8],  )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    mycursor.close()
+    print(myresult)
+    if len(myresult) != 0:
+        return jsonify({"status" : "success"})
+    else:
+        return jsonify({"status" : "failure", "message" : "You have not completed your profile yet"})
 
 
+@app.route("/edit_bookings")
+def edit_bookings():
+    if "email" not in session:
+        return redirect("/")
+    return render_template("booking/viewbookings.html")
 
+@app.route("/fetch_bookings", methods=["POST"])
+def fetch_bookings():
+    if "email" not in session:
+        return redirect("/")
+    curr_date = datetime.now().date()
+    curr_time = datetime.now().time().strftime("%H:%M")
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_nusnet = %s AND date = %s and timeslot > %s"
+    data = (session["email"][0:8], curr_date, curr_time, )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    res = []
+    for i in myresult:
+        res.append(i)
+    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND assoc_nusnet = %s AND date > %s"
+    data = (session["email"][0:8], curr_date, )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    for i in myresult:
+        res.append(i)
+    res2 = []
+    for i in res:
+        res2.append(str(i[1]) + " " + str(i[2]))
+    #print(res2)
+    return jsonify(res2)
 
-
-
+@app.route("/unbook", methods=["POST"])
+def unbook():
+    if "email" not in session:
+        return redirect("/")
+    date = request.form.get("date")
+    time = request.form.get("time")
+    #print(time)
+    sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s, assoc_nusnet = %s WHERE date = %s AND timeslot = %s AND assoc_nusnet = %s"
+    data = (None, None, date, time, session["email"][0:8], )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula, data)
+    db.commit()
+    mycursor.close()
+    return jsonify({"status" : "success", "message" : "Slot unbooked!"})
 
 if __name__ == '__main__':
     app.run(debug=True)

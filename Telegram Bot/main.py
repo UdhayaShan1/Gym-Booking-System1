@@ -1,4 +1,4 @@
-# Rolex Alpha 0.2.6
+# Rolex Beta 0.2.7
 
 #Modules to be imported
 from aiogram.utils import executor
@@ -212,6 +212,11 @@ async def set_nusnet(message: types.Message, state : FSMContext):
         data = (nusnet, )
         mycursor.execute(sqlFormula, data)
         myresult1 = mycursor.fetchone()
+
+        sqlFormula = "SELECT * FROM user WHERE nusnet = %s AND teleId IS NULL"
+        data = (nusnet, )
+        mycursor.execute(sqlFormula, data)
+        myresult2 = mycursor.fetchone()
         if myresult == None:
             user.nusnet = nusnet
             await message.reply("You have not been registered yet! Begin by typing your name")
@@ -220,6 +225,13 @@ async def set_nusnet(message: types.Message, state : FSMContext):
             user.nusnet = nusnet
             await message.reply("Your profile creation has not been completed! Begin by typing your name")
             await state.set_state(Form.set_name)
+        elif myresult2 != None:
+            await message.reply("Appears you probably have registered on the website! We will tag your Telegram handle to that profile!")
+            sqlFormula = "UPDATE user SET teleId = %s WHERE nusnet = %s"
+            data = (message.from_user.id, nusnet, )
+            mycursor.execute(sqlFormula, data)
+            db.commit()
+            await state.finish()
         else:
             await message.reply("You have already been registered! Use /myinfo to check again")
             await state.finish()

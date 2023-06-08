@@ -34,3 +34,7 @@ the relevant slots to be vacant.)
 
 0.2.7
 1) Fixed some oversights.
+
+0.2.8
+1) I think I can safely label the bot as beta release? :P
+2) Fixed another oversight where user may have finished his profile on the website.
