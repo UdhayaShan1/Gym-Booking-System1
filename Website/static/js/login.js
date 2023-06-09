@@ -33,4 +33,55 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     });
 
+    var forgotPasswordContainer = document.getElementById("forgotPwdContainer");
+    var forgotPasswordButton = document.getElementById("forgotPasswordButton");
+    forgotPasswordButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        let label = document.createElement("label");
+        label.textContent = "Enter your email:";
+        let passwordTxt = document.createElement("input");
+        passwordTxt.setAttribute("type", "text");
+        let passwordSubmit = document.createElement("button")
+        passwordSubmit.textContent = "Submit"
+        
+        //Ensure only one instance of the children is appended
+        let check = document.querySelector("#forgotPwdContainer input")
+        if (!check) {
+            forgotPasswordContainer.appendChild(label);
+            forgotPasswordContainer.appendChild(passwordTxt);
+            forgotPasswordContainer.appendChild(passwordSubmit);
+        }
+
+        passwordSubmit.addEventListener("click", function(event) {
+            event.preventDefault();
+            if (passwordTxt.value.length == 0) {
+                window.alert("Empty email!")
+                return;
+            }
+            let formData = new FormData();
+            formData.append("email", passwordTxt.value)
+            fetch("/send_otp_forgot", {
+                method:"POST",
+                body:formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+                if (data.status === "success") {
+                    window.alert("OTP sent to your email!")
+                    window.location.href = "/change_pwd";
+                } else {
+                    window.alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error", error);
+            });
+        });
+
+
+
+
+    });
+
 });

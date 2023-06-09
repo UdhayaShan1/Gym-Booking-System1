@@ -35,4 +35,25 @@ document.addEventListener("DOMContentLoaded", function() {
             }
     }
     })
+
+    var goBack = document.getElementById("backButton");
+    goBack.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/main";
+    })
+
+    var logoutButton = document.getElementById("logout");
+    logoutButton.addEventListener("click", function(event) {
+      event.preventDefault();
+      fetch("/logout", {
+        method: "POST"
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === "success") {
+          window.alert(data.message)
+          window.location.href = "/";
+        }
+      })
+    })
 });

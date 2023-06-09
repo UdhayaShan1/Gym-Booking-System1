@@ -179,6 +179,64 @@ def login():
     return render_template("login.html")
 
 
+@app.route("/send_otp_forgot", methods=["POST"])
+def send_otp_forgot():
+    email_receiver = request.form['email']
+    if check_email(email_receiver) == False:
+        return jsonify({"status" : "failure", "message" : "Invalid NUSNET email format"})
+    session["recoveryEmail"] = email_receiver
+    sqlFormula = "SELECT * FROM user_website WHERE email = %s"
+    data = (email_receiver, )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchone()
+    mycursor.close()
+    if myresult == None:
+        return jsonify({"status" : "failure", "message" : "Not registered"})
+    email_sender = "chad.ionos2@gmail.com"
+    email_password = None
+    with open("includes\gmailPwd.txt") as f:
+        email_password = f.read().strip()
+    subject = "OTP"
+    otp = generate_otp()
+    body = "Your OTP is " + otp;
+    session["recoveryOtp"] = otp
+    em = EmailMessage()
+    em['From'] = email_sender
+    em['To'] = email_receiver
+    em['Subject'] = subject
+    em.set_content(body)
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, email_receiver, em.as_string())
+    return jsonify({"status" : "success", "message" : "sent"})
+
+
+@app.route("/change_pwd")
+def change_pwd():
+    if "recoveryEmail" not in session:
+        return redirect("/")
+    return render_template("changePwd.html")
+
+@app.route("/send_newpwd", methods=["POST"])
+def send_newpwd():
+    if "recoveryEmail" not in session:
+        return redirect("/")
+    otp = request.form.get("otp")
+    pwd = request.form.get("pwd")
+    if otp != session["recoveryOtp"]:
+        return jsonify({"status" : "failure", "message" : "OTP does not match"})
+    hashed_password = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt())
+    sqlFormula = "UPDATE user_website SET password = %s WHERe nusnet = %s"
+    data = (hashed_password, session["recoveryEmail"][0:8], )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula, data)
+    db.commit()
+    mycursor.close()
+    return jsonify({"status" : "success", "message" : "Password changed, attempt to login now!"})
+
+
 @app.route('/main')
 def main():
     print(session)

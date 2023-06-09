@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="{{ url_for('static', filename='js/changePwd.js') }}"></script>
+</head>
+<body>
+    <h1>Change your password here!</h1>
+    <div class="recovery">
+        <form id="eminemRecovery">
+            <label for="otp">OTP:</label><br>
+            <input type="text" id="otp" name="otp"><br><br>
+            <label for="newPwd">New Password:</label><br>
+            <input type="password" id="newPwd" name="newPwd"><br><br>
+            <label for="newPwdCfm">Confirm Password:</label><br>
+            <input type="password" id="newPwdCfm" name="newPwdCfm"><br><br>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+    
+</body>
+</html>

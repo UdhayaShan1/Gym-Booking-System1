@@ -7,25 +7,75 @@
     <title>Document</title>
     <script src="{{ url_for('static', filename='js/booking_times.js') }}"></script>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        #buttonContainer {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            justify-items: center;
+        }
+        
         .available {
-            background-color: green;
-            color: white;
+            padding: 20px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
         }
         
         .booked {
-            background-color: red;
-            color: white;
-            opacity: 0.5;
+            padding: 20px;
+            background-color: #FF5722;
+            opacity: 0.7;
+            cursor: not-allowed;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
         }
         
-        .booked:hover {
-            cursor: not-allowed;
+        #backButton,
+        #logout {
+            background-color: #2196F3;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+        }
+        
+        #backButton:hover,
+        #logout:hover {
+            background-color: #1976D2;
         }
     </style>
 </head>
 <body>
-    <h1><button id="backButton"">Back</button>
-    <button id="logout">Logout</button></h1>
+    <h1>
+        <button id="backButton">Back</button>
+        <button id="logout">Logout</button>
+    </h1>
     <div id="timeContainer"></div>
     
 </body>

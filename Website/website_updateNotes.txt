@@ -31,3 +31,6 @@
 2) Added ability to check booked slots.
 3) Added ability to unbook slots.
 4) Technically we are done with the fundamental features.
+
+0.6.2
+1) Added ability to "Forgot Password", verified using OTP.
