@@ -238,5 +238,16 @@ document.addEventListener("DOMContentLoaded", function() {
         window.location.href = "/main";
     });
 
+    var changePassword = document.getElementById("changePwd");
+    changePassword.addEventListener("click", function(event) {
+        event.preventDefault();
+        fetch("/send_otp_changepwd")
+        .then(response => response.json())
+        .then(data => {
+            window.alert("OTP sent to your email!")
+            window.location.href = "/change_pwd";
+        })
+    })
+
 
 });

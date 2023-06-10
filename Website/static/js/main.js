@@ -66,6 +66,17 @@ document.addEventListener("DOMContentLoaded", function() {
         window.location.href = "/edit_bookings";
     });
 
+    var changePassword = document.getElementById("changePassword");
+    changePassword.addEventListener("click", function(event) {
+        event.preventDefault();
+        fetch("/send_otp_changepwd")
+        .then(response => response.json())
+        .then(data => {
+            window.alert("OTP sent to your email!")
+            window.location.href = "/change_pwd";
+        })
+    })
+
     
 
 

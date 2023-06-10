@@ -34,3 +34,7 @@
 
 0.6.2
 1) Added ability to "Forgot Password", verified using OTP.
+
+0.6.3
+1) Added ability to change password from the main page.
+2) Wait why the did i add it to main instead of profile, changed to profile page instead. I need to slp.

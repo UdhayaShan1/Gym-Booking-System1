@@ -212,6 +212,33 @@ def send_otp_forgot():
         smtp.sendmail(email_sender, email_receiver, em.as_string())
     return jsonify({"status" : "success", "message" : "sent"})
 
+@app.route("/send_otp_changepwd")
+def send_otp_changepwd():
+    print(session)
+    if "email" not in session:
+        return redirect("/")
+    email_sender = "chad.ionos2@gmail.com"
+    email_password = None
+    with open("includes\gmailPwd.txt") as f:
+        email_password = f.read().strip()
+    subject = "OTP"
+    otp = generate_otp()
+    body = "Your OTP is " + otp;
+    session["recoveryOtp"] = otp
+    em = EmailMessage()
+    em['From'] = email_sender
+    em['To'] = session["email"]
+    session["recoveryEmail"] = session["email"]
+    em['Subject'] = subject
+    em.set_content(body)
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+        smtp.login(email_sender, email_password)
+        smtp.sendmail(email_sender, session["email"], em.as_string())
+    return jsonify({"status" : "success", "message" : "sent"})
+
+
+
 
 @app.route("/change_pwd")
 def change_pwd():
@@ -234,7 +261,9 @@ def send_newpwd():
     mycursor.execute(sqlFormula, data)
     db.commit()
     mycursor.close()
-    return jsonify({"status" : "success", "message" : "Password changed, attempt to login now!"})
+    #To start with clean slate(email, otp, recoveryemail, recoveryOtp all inside dictionary idk if makes sense) and to check if user knows his pwd
+    session.clear()
+    return jsonify({"status" : "success", "message" : "Password changed for your account! Please attempt to login to check"})
 
 
 @app.route('/main')
