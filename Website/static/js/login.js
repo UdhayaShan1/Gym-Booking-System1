@@ -66,7 +66,6 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .then(response => response.json())
             .then(data => {
-                
                 if (data.status === "success") {
                     window.alert("OTP sent to your email!")
                     window.location.href = "/change_pwd";
