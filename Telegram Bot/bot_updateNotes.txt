@@ -38,3 +38,7 @@ the relevant slots to be vacant.)
 0.2.8
 1) I think I can safely label the bot as beta release? :P
 2) Fixed another oversight where user may have finished his profile on the website.
+
+0.2.9
+1) Added a report system, allows user to submit text feedback and if they wish to, submit a photo as well.
+    Works by uploading to my alt's Google Drive to act as a cloud storage.

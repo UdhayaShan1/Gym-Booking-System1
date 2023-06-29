@@ -1,4 +1,4 @@
-# Rolex Beta 0.2.7
+# Rolex Beta 0.2.9
 
 #Modules to be imported
 from aiogram.utils import executor
@@ -21,7 +21,15 @@ import string
 from email.message import EmailMessage
 import ssl
 import smtplib
+import os
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+import glob
+import shutil
 
+SCOPES = ['https://www.googleapis.com/auth/drive']
+SERVICE_ACCOUNT_FILE = 'includes/service_account.json'
+PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 import mysql.connector
@@ -79,6 +87,13 @@ class Book(StatesGroup):
     picked_unbook_date = State()
     picked_unbook_additional = State()
 
+#State machines for reporting
+class Reporting(StatesGroup):
+    await_feedback = State()
+    await_photo_response = State()
+    await_photo = State()
+
+
 #Dictionary for user creation Useful for profile creation.
 users = {}
 class User:
@@ -98,6 +113,13 @@ class Booking:
         self.teleId = teleId
         self.date = None
         self.time = None
+
+reports = {}
+class Report:
+    def __init__(self, teleId) -> None:
+        self.teleId = teleId
+        self.text = None
+        self.photo = None
 
 #Force exit out of any state
 @dp.message_handler(state="*", commands=['exit'])
@@ -165,7 +187,7 @@ async def start(message: types.Message, state : FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.7 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.9 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     """
@@ -1187,15 +1209,121 @@ async def unBookMoreHandler(call: types.CallbackQuery, state : FSMContext):
         await state.finish()
 
 
+def authenticate():
+    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    return creds
+
+def upload_photo(file_path, id):
+    creds = authenticate()
+    service = build('drive', 'v3', credentials=creds)
+
+    file_metadata = {
+        'name' : id,
+        'parents' : [PARENT_FOLDER_ID]
+    }
+
+    file = service.files().create(
+        body=file_metadata,
+        media_body=file_path
+    ).execute()
+
+
+
+@dp.message_handler(commands=["report"])
+async def report(message: types.Message, state : FSMContext):
+    await message.reply("Please state your feedback")
+    reportObj = Report(message.from_user.id)
+    reports[message.from_user.id] = reportObj
+    await state.set_state(Reporting.await_feedback)
+
+@dp.message_handler(state=Reporting.await_feedback)
+async def feedbackHandler(message: types.Message, state: FSMContext):
+    reportObj = reports[message.from_user.id]
+    reportObj.text = message.text
+    sqlFormula = "INSERT INTO reports (report, teleId, nusnet) VALUES (%s, %s, %s)"
+    data = (message.text, message.from_user.id, nusnetRetriever(message.from_user.id))
+    mycursor.execute(sqlFormula, data)
+    db.commit()
+    responses = ["Yes", "No"]
+    buttons = [InlineKeyboardButton(
+        text=md.text(button_label),
+        callback_data=f"{button_label}"
+            ) for button_label in responses]
+    keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+    await message.reply("Do you wish to submit a photo as well?", reply_markup=keyboard)
+    await state.set_state(Reporting.await_photo_response)
+
+
+@dp.callback_query_handler(state=Reporting.await_photo_response)
+async def photoReponseHandler(call:types.CallbackQuery, state : FSMContext):
+    if call.data == "Yes":
+        await call.message.answer("Okay, please submit your photo")
+        await state.set_state(Reporting.await_photo)
+    else:
+        await call.message.answer("Okay your report has been submitted, thank you!")
+        await state.finish()
+
+#Helper function to retrieve reportid for tagging of photos to match the report in db
+def reportIdRetriever(id):
+    sqlFormula = "SELECT * FROM reports WHERE teleId = %s"
+    mycursor.execute(sqlFormula, (id, ))
+    myresult = mycursor.fetchall()
+    return myresult[-1][-1]
+
+
+@dp.message_handler(state=Reporting.await_photo, content_types=["any"])
+async def photoSubmissionHandler(message : types.Message, state : FSMContext):
+    print(message.content_type)
+    if message.content_type != 'photo':
+        await message.reply("Please submit a photo, if you do not wish to, please /exit, your text feedback will still be submitted!")
+    else:
+        #await message.reply(reportIdRetriever(message.from_user.id))
+        user_folder = os.path.join("includes/", str(message.from_user.id))
+        os.makedirs(user_folder, exist_ok=True)
+        photo = await message.photo[-1].download("includes/" + str(message.from_user.id) +"/" + str(reportIdRetriever(message.from_user.id)) + ".jpg")
+        #files = glob.glob(os.path.join("includes/" + str(message.from_user.id) + "/photos", '*'))
+        #last_file = max(files, key=os.path.getctime)
+        #print(last_file)
+        #file_path = "includes/" + str(message.from_user.id) + "/photos/file_0.jpg"
+        #file_id = message.photo[-1].file_id
+        #file = await bot.get_file(file_id)
+        #file_path = file.file_path
+        #print(file_path)
+        #file_path = os.path.join("includes/", photo.file_path)
+        upload_photo("includes/" + str(message.from_user.id) + "/" + str(reportIdRetriever(message.from_user.id)) + ".jpg", reportIdRetriever(message.from_user.id))
+        await state.finish()
+        #Free up local space
+        await message.reply("Okay feedback submitted with photo thank you!")
+        photo.close()
+        shutil.rmtree("includes/" + str(message.from_user.id))
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #Leave this at bottom to catch unknown commands or text input by users
 @dp.message_handler(state="*")
-async def echo(message: types.Message):
+async def echo(message: types.Message, state : FSMContext):
     """
     Message handler for catching unknown commands or text input by users.
 
     Parameters:
     - message: The Message object representing the user's message.
     """
+    current_state = await state.get_state()
+    print(f"Current state: {current_state}")
     await message.reply("Unknown command, use / to check for available commands")
 
 @dp.callback_query_handler(state="*")
