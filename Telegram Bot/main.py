@@ -336,6 +336,7 @@ async def set_room(message: types.Message, state : FSMContext):
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
+
 @dp.message_handler(state=Form.set_spotter_name)
 async def set_spotter_name(message: types.Message, state : FSMContext):
     """
@@ -1277,10 +1278,12 @@ async def photoSubmissionHandler(message : types.Message, state : FSMContext):
     if message.content_type != 'photo':
         await message.reply("Please submit a photo, if you do not wish to, please /exit, your text feedback will still be submitted!")
     else:
-        #await message.reply(reportIdRetriever(message.from_user.id))
+        #Create a unique folder for each user so as to prevent overriding of photo by other users
         user_folder = os.path.join("includes/", str(message.from_user.id))
         os.makedirs(user_folder, exist_ok=True)
         photo = await message.photo[-1].download("includes/" + str(message.from_user.id) +"/" + str(reportIdRetriever(message.from_user.id)) + ".jpg")
+        #Left below as commented to track my progress to getting this done, was a pain :p
+
         #files = glob.glob(os.path.join("includes/" + str(message.from_user.id) + "/photos", '*'))
         #last_file = max(files, key=os.path.getctime)
         #print(last_file)
@@ -1290,11 +1293,14 @@ async def photoSubmissionHandler(message : types.Message, state : FSMContext):
         #file_path = file.file_path
         #print(file_path)
         #file_path = os.path.join("includes/", photo.file_path)
-        upload_photo("includes/" + str(message.from_user.id) + "/" + str(reportIdRetriever(message.from_user.id)) + ".jpg", reportIdRetriever(message.from_user.id))
-        await state.finish()
-        #Free up local space
-        await message.reply("Okay feedback submitted with photo thank you!")
+        try:
+            upload_photo("includes/" + str(message.from_user.id) + "/" + str(reportIdRetriever(message.from_user.id)) + ".jpg", reportIdRetriever(message.from_user.id))
+            await state.finish()
+            await message.reply("Okay feedback submitted with photo thank you!")
+        except:
+            await message.reply("Sorry, error when submitting do submit again or /exit")
         photo.close()
+        #Delete the folder so as to free up space
         shutil.rmtree("includes/" + str(message.from_user.id))
 
         

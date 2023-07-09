@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify, session, redirect
 import bcrypt
 import re
 import base64
+import os
 import os.path
 import smtplib
 from email.message import EmailMessage
@@ -522,6 +523,35 @@ def unbook():
     db.commit()
     mycursor.close()
     return jsonify({"status" : "success", "message" : "Slot unbooked!"})
+
+@app.route("/report", methods=["POST", "GET"])
+def report():
+    if request.method == "POST":
+        feedback = request.form.get('feedback')
+        print(feedback)
+        sqlFormula = "INSERT INTO reports (report, nusnet) VALUES (%s, %s)"
+        data = (feedback, str(session['email'])[0:8])
+        mycursor = db.cursor()
+        mycursor.execute(sqlFormula, data)
+        db.commit()
+        mycursor.close()
+        return jsonify({"status" : "success", "message" : "Entered feedback!"})
+    else:
+        if "email" in session:
+            return render_template("report.html")
+        return redirect("/")
+
+
+
+    """
+    file = request.files['photo']
+    user_folder = os.path.join("photos/", str(session['email'])[0:8])
+    os.makedirs(user_folder, exist_ok=True)
+    file.save("photos/str(session['email'])[0:8]/file.jpg")
+    """
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -38,3 +38,7 @@
 0.6.3
 1) Added ability to change password from the main page.
 2) Wait why the did i add it to main instead of profile, changed to profile page instead. I need to slp.
+
+0.6.4
+1) Added ability to send text reports for now.
+

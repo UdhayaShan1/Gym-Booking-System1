@@ -42,3 +42,7 @@ the relevant slots to be vacant.)
 0.2.9
 1) Added a report system, allows user to submit text feedback and if they wish to, submit a photo as well.
     Works by uploading to my alt's Google Drive to act as a cloud storage.
+
+0.2.9.1
+1) Overlooked this oversight, what if there is an error in uploading?
+    Decided to use try except and gracefully handle the uploading, if got error, ask user to submit again, if not state.finish() as per normal.
