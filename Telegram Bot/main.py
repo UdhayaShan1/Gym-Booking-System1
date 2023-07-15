@@ -1,6 +1,7 @@
 # Rolex Beta 0.2.9
 
-#Modules to be imported
+# Modules to be imported
+import mysql.connector
 from aiogram.utils import executor
 from aiogram.types import ParseMode
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -32,7 +33,6 @@ SERVICE_ACCOUNT_FILE = 'includes/service_account.json'
 PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
-import mysql.connector
 
 pwd = None
 with open("includes\database_pwd.txt") as f:
@@ -58,16 +58,15 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 
+########################################### <<<MAIN CODE>>>###########################################
 
-###########################################<<<MAIN CODE>>>###########################################
+############## <<<USER CREATION>>>##############
 
-##############<<<USER CREATION>>>##############
-
-#State machines for booking process to create user profile
+# State machines for booking process to create user profile
 class Form(StatesGroup):
     set_nusnet = State()
     set_name = State()
-    #set_phone = State()
+    # set_phone = State()
     set_room = State()
     set_spotter_name = State()
     set_spotter_room = State()
@@ -77,29 +76,37 @@ class Form(StatesGroup):
     change_spotter_room = State()
     otp_verify = State()
     delete_details = State()
-    
-#State machines for booking process to create a sequential process (in progress)
+
+# State machines for booking process to create a sequential process (in progress)
+
+
 class Book(StatesGroup):
-    picked_date= State()
+    picked_date = State()
     picked_time = State()
     additional_time = State()
     repicked_date = State()
     picked_unbook_date = State()
     picked_unbook_additional = State()
 
-#State machines for reporting
+# State machines for reporting
+
+
 class Reporting(StatesGroup):
     await_feedback = State()
     await_photo_response = State()
     await_photo = State()
 
-#State machines for viewing response to reports
+# State machines for viewing response to reports
+
+
 class viewReport(StatesGroup):
     clicked_id = State()
 
 
-#Dictionary for user creation Useful for profile creation.
+# Dictionary for user creation Useful for profile creation.
 users = {}
+
+
 class User:
     def __init__(self, teleId):
         self.teleId = teleId
@@ -110,22 +117,30 @@ class User:
         self.spotter_name = None
         self.spotter_room = None
 
-#Dictionary for booking creation. No proper use yet... probably will be deprecated.             
+
+# Dictionary for booking creation. No proper use yet... probably will be deprecated.
 bookings = {}
+
+
 class Booking:
     def __init__(self, teleId):
         self.teleId = teleId
         self.date = None
         self.time = None
 
+
 reports = {}
+
+
 class Report:
     def __init__(self, teleId) -> None:
         self.teleId = teleId
         self.text = None
         self.photo = None
 
-#Force exit out of any state
+# Force exit out of any state
+
+
 @dp.message_handler(state="*", commands=['exit'])
 async def exit(message: types.Message, state: FSMContext):
     """
@@ -162,6 +177,7 @@ async def exit(message: types.Message, state: FSMContext):
         await message.reply("Okay, left current state. Use / to continue with available commands")
     await state.finish()
 
+
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
@@ -170,12 +186,12 @@ def nusnetRetriever(id):
     return myresult[-2]
 
 
-#Probably will use to handle user familirization with bot
+# Probably will use to handle user familirization with bot
 @dp.message_handler(commands=['start'])
-async def start(message: types.Message, state : FSMContext):
+async def start(message: types.Message, state: FSMContext):
     """
     Handler for the '/start' command. Initializes the registration process for the user.
-    
+
     Args:
         message (types.Message): The incoming message object.
         state (FSMContext): The state context of the conversation.
@@ -212,7 +228,9 @@ async def start(message: types.Message, state : FSMContext):
     await message.reply("Okay, first begin by typing your NUSNET id to check if your profile is created! 👍")
     await state.set_state(Form.set_nusnet)
 
-#Check if valid nusnet id
+# Check if valid nusnet id
+
+
 def validnusNet(input_string):
     pattern = r'^e\d{7}$'  # Regex pattern to match "e" followed by 7 digits
     match = re.match(pattern, input_string)
@@ -220,10 +238,10 @@ def validnusNet(input_string):
 
 
 @dp.message_handler(state=Form.set_nusnet)
-async def set_nusnet(message: types.Message, state : FSMContext):
+async def set_nusnet(message: types.Message, state: FSMContext):
     users[message.from_user.id] = User(message.from_user.id)
     user = users[message.from_user.id]
-    #user = users[message.from_user.id]
+    # user = users[message.from_user.id]
     nusnet = str(message.text).lower()
     if validnusNet(nusnet) == False:
         await message.reply("Please type valid NUSNET id!")
@@ -232,7 +250,6 @@ async def set_nusnet(message: types.Message, state : FSMContext):
         data = (nusnet, )
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchone()
-
 
         sqlFormula = "SELECT * FROM user WHERE nusnet = %s AND name IS NOT NULL AND roomNo IS NOT NULL AND spotterName IS NOT NULL AND spotterRoomNo IS NOT NULL;"
         data = (nusnet, )
@@ -263,11 +280,15 @@ async def set_nusnet(message: types.Message, state : FSMContext):
             await state.finish()
 
 # Generate a random OTP
+
+
 async def generate_otp():
     otp = ''.join(random.choices(string.digits, k=4))
     return otp
 
-#Send otp to user
+# Send otp to user
+
+
 async def send_otp(nusnet):
     email_receiver = nusnet+"@u.nus.edu"
     email_sender = "chad.ionos2@gmail.com"
@@ -286,10 +307,9 @@ async def send_otp(nusnet):
         smtp.sendmail(email_sender, email_receiver, em.as_string())
     return otp
 
-    
 
 @dp.message_handler(state=Form.set_name)
-async def set_name(message: types.Message, state : FSMContext):
+async def set_name(message: types.Message, state: FSMContext):
     """
     Handler for setting the user's name during the registration process.
 
@@ -308,7 +328,9 @@ async def set_name(message: types.Message, state : FSMContext):
     await message.reply("Okay, what is your room number")
     await state.set_state(Form.set_room)
 
-#Room number validation
+# Room number validation
+
+
 def check_string_format(string):
     pattern = r"^\d{2}-\d{2}[a-zA-Z]?$"
     if re.match(pattern, string):
@@ -316,14 +338,15 @@ def check_string_format(string):
     else:
         return False
 
+
 @dp.message_handler(state=Form.set_room)
-async def set_room(message: types.Message, state : FSMContext):
+async def set_room(message: types.Message, state: FSMContext):
     """
     Handler for setting the user's room number during the registration process.
 
     Usage:
         [User Input] - Set the user's room number during the registration process.
-    
+
     Example:
         11-12
 
@@ -342,13 +365,13 @@ async def set_room(message: types.Message, state : FSMContext):
 
 
 @dp.message_handler(state=Form.set_spotter_name)
-async def set_spotter_name(message: types.Message, state : FSMContext):
+async def set_spotter_name(message: types.Message, state: FSMContext):
     """
     Handler for setting the spotter's name during the registration process.
 
     Usage:
         [User Input] - Set the spotter's name during the registration process.
-    
+
     Example:
         John Doe
 
@@ -361,8 +384,9 @@ async def set_spotter_name(message: types.Message, state : FSMContext):
     await message.reply("Okay what is their Room No?")
     await state.set_state(Form.set_spotter_room)
 
+
 @dp.message_handler(state=Form.set_spotter_room)
-async def set_spotter_room(message: types.Message, state : FSMContext):
+async def set_spotter_room(message: types.Message, state: FSMContext):
     """
     Handler for setting the spotter's room number during the registration process.
     If valid room, add user into SQL database.
@@ -386,20 +410,23 @@ async def set_spotter_room(message: types.Message, state : FSMContext):
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchone()
         if myresult == None:
-            #Insert into SQL database
+            # Insert into SQL database
             sqlFormula = "INSERT INTO user (teleId, roomNo, name, spotterName, spotterRoomNo, nusnet) VALUES (%s, %s, %s, %s, %s, %s)"
-            data = (message.from_user.id, user.room, user.name, user.spotter_name, user.spotter_room, user.nusnet)
+            data = (message.from_user.id, user.room, user.name,
+                    user.spotter_name, user.spotter_room, user.nusnet)
             mycursor.execute(sqlFormula, data)
             db.commit()
         else:
             sqlFormula = "UPDATE user SET teleId = %s, roomNo = %s, name = %s, spotterName = %s, spotterRoomNo = %s WHERE nusnet = %s"
-            data = (message.from_user.id, user.room, user.name, user.spotter_name, user.spotter_room, user.nusnet, )
+            data = (message.from_user.id, user.room, user.name,
+                    user.spotter_name, user.spotter_room, user.nusnet, )
             mycursor.execute(sqlFormula, data)
             db.commit()
         await message.reply("Okay info set, check via /myinfo")
         await state.finish()
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
+
 
 @dp.message_handler(commands=['myinfo'])
 async def myinfo(message: types.Message):
@@ -424,10 +451,11 @@ async def myinfo(message: types.Message):
             verifiedStr = "\n\nYou are not verified yet, proceed to /verify!"
         else:
             verifiedStr = "\n\nYou are verified!"
-        await message.reply("Your NUSNET is " + myresult[-2] + "\n\nYour name is " + myresult[3] + "\n\nYour room number is " + myresult[2] +"\n\nYour spotter is " + myresult[-4] + "\n\nYour spotter room number is " + myresult[-3] + verifiedStr)
+        await message.reply("Your NUSNET is " + myresult[-2] + "\n\nYour name is " + myresult[3] + "\n\nYour room number is " + myresult[2] + "\n\nYour spotter is " + myresult[-4] + "\n\nYour spotter room number is " + myresult[-3] + verifiedStr)
+
 
 @dp.message_handler(commands=['namechg'])
-async def chg_name(message: types.Message, state : FSMContext):
+async def chg_name(message: types.Message, state: FSMContext):
     """
     Handler for changing the user's name.
 
@@ -441,8 +469,9 @@ async def chg_name(message: types.Message, state : FSMContext):
     await message.reply("Okay, what would you like to change your name to?")
     await state.set_state(Form.change_name)
 
+
 @dp.message_handler(state=Form.change_name)
-async def chg_nameHandler(message: types.Message, state : FSMContext):
+async def chg_nameHandler(message: types.Message, state: FSMContext):
     """
     Handler for changing the user's name.
 
@@ -460,8 +489,9 @@ async def chg_nameHandler(message: types.Message, state : FSMContext):
     await message.reply("Okay done, use /myinfo to check")
     await state.finish()
 
+
 @dp.message_handler(commands=['roomchg'])
-async def chg_room(message: types.Message, state : FSMContext):
+async def chg_room(message: types.Message, state: FSMContext):
     """
     Handler for changing the user's registered room.
 
@@ -475,8 +505,9 @@ async def chg_room(message: types.Message, state : FSMContext):
     await message.reply("Okay, what would you like to change your registered room to?")
     await state.set_state(Form.change_room)
 
+
 @dp.message_handler(state=Form.change_room)
-async def chg_roomHandler(message: types.Message, state : FSMContext):
+async def chg_roomHandler(message: types.Message, state: FSMContext):
     """
     Handler for changing the user's registered room.
 
@@ -498,8 +529,9 @@ async def chg_roomHandler(message: types.Message, state : FSMContext):
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
+
 @dp.message_handler(commands=['spotternamechg'])
-async def chg_name(message: types.Message, state : FSMContext):
+async def chg_name(message: types.Message, state: FSMContext):
     """
     Handler for changing the user's spotter's name.
 
@@ -513,8 +545,9 @@ async def chg_name(message: types.Message, state : FSMContext):
     await message.reply("Okay, what would you like to change your spotter's name to?")
     await state.set_state(Form.change_spotter_name)
 
+
 @dp.message_handler(state=Form.change_spotter_name)
-async def chg_nameHandler(message: types.Message, state : FSMContext):
+async def chg_nameHandler(message: types.Message, state: FSMContext):
     """
     Handler for updating the user's spotter's name.
 
@@ -532,8 +565,9 @@ async def chg_nameHandler(message: types.Message, state : FSMContext):
     await message.reply("Okay done, use /myinfo to check")
     await state.finish()
 
+
 @dp.message_handler(commands=['spotterroomchg'])
-async def chg_room(message: types.Message, state : FSMContext):
+async def chg_room(message: types.Message, state: FSMContext):
     """
     Handler for changing the user's registered spotter's room number.
 
@@ -547,8 +581,9 @@ async def chg_room(message: types.Message, state : FSMContext):
     await message.reply("Okay, what would you like to change your registered spotter's room number to?")
     await state.set_state(Form.change_spotter_room)
 
+
 @dp.message_handler(state=Form.change_spotter_room)
-async def chg_roomHandler(message: types.Message, state : FSMContext):
+async def chg_roomHandler(message: types.Message, state: FSMContext):
     """
     Handler for changing the user's spotter's room number.
 
@@ -570,8 +605,9 @@ async def chg_roomHandler(message: types.Message, state : FSMContext):
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
+
 @dp.message_handler(commands=['verify'])
-async def verify(message: types.Message, state : FSMContext):
+async def verify(message: types.Message, state: FSMContext):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
@@ -593,9 +629,10 @@ async def verify(message: types.Message, state : FSMContext):
             await message.reply("Okay, OTP sent to your NUSNET email, please type it out")
             await state.set_state(Form.otp_verify)
 
+
 @dp.message_handler(state=Form.otp_verify)
-async def otp_handler(message: types.Message, state : FSMContext):
-    #print(users)
+async def otp_handler(message: types.Message, state: FSMContext):
+    # print(users)
     otp_given = message.text
     user = users[message.from_user.id]
     if otp_given == user.otp:
@@ -609,8 +646,9 @@ async def otp_handler(message: types.Message, state : FSMContext):
         await message.reply("😔 Sorry, OTP is not correct, try /verify again!")
         await state.finish()
 
+
 @dp.message_handler(state='*', commands=['delete'])
-async def deleteMyDetails(message: types.Message, state : FSMContext):
+async def deleteMyDetails(message: types.Message, state: FSMContext):
     """
     Handler for deleting user details.
 
@@ -635,7 +673,7 @@ async def deleteMyDetails(message: types.Message, state : FSMContext):
     if myresult == None:
         await message.reply("You are not registered in the system.")
     else:
-        #Attempt at InLineKeyboard instead
+        # Attempt at InLineKeyboard instead
         button3 = InlineKeyboardButton(text="Yes!", callback_data="Yes!")
         button4 = InlineKeyboardButton(text="No!", callback_data="No!")
         keyboard2 = InlineKeyboardMarkup().add(button3).add(button4)
@@ -657,6 +695,7 @@ async def deleteHandler(message: types.Message, state : FSMContext):
     await state.finish()
 """
 
+
 @dp.callback_query_handler(state=Form.delete_details)
 async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
     """
@@ -675,17 +714,18 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
         data = (None, None, None, None, None, call.from_user.id, )
         mycursor.execute(sqlFormula, data)
         db.commit()
-        
+
         sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s, assoc_nusnet = %s WHERE (assoc_teleId = %s OR assoc_nusnet = %s)"
         mycursor.execute(sqlFormula, (None, None, call.from_user.id, nusnet, ))
         db.commit()
         await call.message.answer("Data deleted, use /start to begin user creation again")
     else:
         await call.message.answer("Data not deleted..")
-    #Add code to ammend all associated bookings to have teleId and spotterId to None.
+    # Add code to ammend all associated bookings to have teleId and spotterId to None.
     await state.finish()
 
-##############<<<BOOKING LOGIC>>>##############  
+############## <<<BOOKING LOGIC>>>##############
+
 
 @dp.message_handler(commands=['book'])
 async def book(message: types.Message, state: FSMContext):
@@ -740,17 +780,16 @@ async def book(message: types.Message, state: FSMContext):
     elif myresult == None:
         await message.reply("You are not registered, use /start to begin profile creation")
     else:
-        #Create local booking object
+        # Create local booking object
         booking_obj = Booking(message.from_user.id)
         bookings[message.from_user.id] = booking_obj
-        #Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
+        # Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         current_date = now.date()
         current_date_14_forward = (now.date()+timedelta(days=14))
         dates = [current_date + timedelta(days=i) for i in range(14)]
-        await message.reply("Sure, let's display available dates\n" +"Current date is "+ str(current_date) +"\nTime is " + str(current_time))
-
+        await message.reply("Sure, let's display available dates\n" + "Current date is " + str(current_date) + "\nTime is " + str(current_time))
 
         # Create a list of button labels for each date
         button_labels = [date.strftime('%Y-%m-%d') for date in dates]
@@ -765,6 +804,7 @@ async def book(message: types.Message, state: FSMContext):
         calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
+
 
 async def bookCycle(message: types.Message, state: FSMContext, id):
     await message.reply(bookings)
@@ -777,7 +817,7 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
     - message: The message object representing the user's message.
     - state: The FSMContext object for managing the conversation state.
     """
-    #Check if user is in the system in the first place
+    # Check if user is in the system in the first place
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
     mycursor.execute(sqlFormula, data)
@@ -785,14 +825,14 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
     if myresult == None:
         await message.reply("You are not registered, use /start to begin profile creation")
     else:
-        #Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
+        # Fetch current time, current date and date in 2 weeks for SQL query, not sure if need adjust GMT looks like based on IDE
         now = datetime.now()
         current_time = now.strftime("%H:%M:%S")
         current_date = now.date()
         current_date_14_forward = (now.date()+timedelta(days=14))
         dates = [current_date + timedelta(days=i) for i in range(14)]
-        await message.reply("Sure, let's display available dates\n" +"Current date is "+ str(current_date) +"\nTime is " + str(current_time))
-    
+        await message.reply("Sure, let's display available dates\n" + "Current date is " + str(current_date) + "\nTime is " + str(current_time))
+
         # Create a list of button labels for each date
         button_labels = [date.strftime('%Y-%m-%d') for date in dates]
 
@@ -807,15 +847,20 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
 
-#To be completed
+# To be completed
+
+
 def dateValidator(s):
     pass
-#To be completed
+# To be completed
+
+
 def timeValidator(s):
     pass
 
+
 @dp.callback_query_handler(state=Book.picked_date)
-async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
+async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
     """
     Callback query handler for viewing available time slots for booking.
 
@@ -823,7 +868,7 @@ async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
 
     This callback query handler is triggered when the user selects a date from the calendar keyboard presented after the /book command. 
     It processes the selected date and checks if it is in the past. 
-    
+
     If the selected date is in the past, a message is sent to the user informing them that booking in the past is not allowed and the conversation is finished. 
     If the selected date is valid, the handler retrieves the available time slots for the selected date from the database.
     If the selected date is different from the current date, the handler retrieves all time slots for that date and generates a message displaying the availability of each time slot. 
@@ -849,14 +894,14 @@ async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
     The bot responds by displaying the available time slots for that date. 
     Each time slot is marked with either a ✅ (available) or ❌ (not available). 
     The user can then select a specific time slot from the displayed options.
-    
+
 
 
     Parameters:
     - call: The CallbackQuery object representing the callback query.
     - state: The FSMContext object for managing the conversation state.
     """
-    #await call.message.answer(call.data)
+    # await call.message.answer(call.data)
     booking_obj = bookings[call.from_user.id]
     booking_obj.date = str(call.data)[5:]
     now = datetime.now()
@@ -881,15 +926,17 @@ async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
                     time_button_labels.append(str(i[2])[:-3])
                 else:
                     str1 += str(i[2])[:-3] + " ❌\n"
-            
+
             buttons = [InlineKeyboardButton(
                 text=md.text(button_label),
                 callback_data=f"time_{button_label}"
             ) for button_label in time_button_labels]
-                
+
             calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
-            button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
-            calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+            button1 = InlineKeyboardButton(
+                text="Pick another date", callback_data="Pick another date")
+            calendar_keyboard = InlineKeyboardMarkup(
+                row_width=2).add(*buttons).add(button1)
             await call.message.answer(str1, reply_markup=calendar_keyboard)
             await state.set_state(Book.picked_time)
         else:
@@ -911,20 +958,24 @@ async def bookStageViewSlots(call: types.CallbackQuery, state : FSMContext):
                         time_button_labels.append(str(i[2])[:-3])
                     else:
                         str1 += str(i[2])[:-3] + " ❌\n"
-                
+
                 buttons = [InlineKeyboardButton(
                     text=md.text(button_label),
                     callback_data=f"time_{button_label}"
                 ) for button_label in time_button_labels]
-                button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
-                calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+                button1 = InlineKeyboardButton(
+                    text="Pick another date", callback_data="Pick another date")
+                calendar_keyboard = InlineKeyboardMarkup(
+                    row_width=2).add(*buttons).add(button1)
                 await call.message.answer(str1, reply_markup=calendar_keyboard)
                 await state.set_state(Book.picked_time)
 
-#This function must be explicitly called if and only if user asks to book agn for same day
-async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext, id):
-    #await message.reply(message.text)
-    #print((bookings.keys()))
+# This function must be explicitly called if and only if user asks to book agn for same day
+
+
+async def bookStageViewSlotsCycle(message: types.Message, state: FSMContext, id):
+    # await message.reply(message.text)
+    # print((bookings.keys()))
     booking_obj = bookings[id]
     now = datetime.now()
     print(now.date(), booking_obj.date)
@@ -948,14 +999,16 @@ async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext, id
                     time_button_labels.append(str(i[2])[:-3])
                 else:
                     str1 += str(i[2])[:-3] + " ❌\n"
-            
+
             buttons = [InlineKeyboardButton(
                 text=md.text(button_label),
                 callback_data=f"time_{button_label}"
             ) for button_label in time_button_labels]
-                
-            button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
-            calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+
+            button1 = InlineKeyboardButton(
+                text="Pick another date", callback_data="Pick another date")
+            calendar_keyboard = InlineKeyboardMarkup(
+                row_width=2).add(*buttons).add(button1)
             await message.reply(str1, reply_markup=calendar_keyboard)
             await state.set_state(Book.picked_time)
         else:
@@ -977,19 +1030,22 @@ async def bookStageViewSlotsCycle(message :types.Message, state : FSMContext, id
                         time_button_labels.append(str(i[2])[:-3])
                     else:
                         str1 += str(i[2])[:-3] + " ❌\n"
-                
+
                 buttons = [InlineKeyboardButton(
                     text=md.text(button_label),
                     callback_data=f"time_{button_label}"
                 ) for button_label in time_button_labels]
-                
-                button1 = InlineKeyboardButton(text="Pick another date", callback_data="Pick another date")
-                calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons).add(button1)
+
+                button1 = InlineKeyboardButton(
+                    text="Pick another date", callback_data="Pick another date")
+                calendar_keyboard = InlineKeyboardMarkup(
+                    row_width=2).add(*buttons).add(button1)
                 await message.reply(str1, reply_markup=calendar_keyboard)
                 await state.set_state(Book.picked_time)
 
+
 @dp.callback_query_handler(state=Book.picked_time)
-async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
+async def bookStageSelectedTime(call: types.CallbackQuery, state: FSMContext):
     """
     Callback query handler for selecting a specific time slot for booking.
 
@@ -1036,7 +1092,8 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
         myresult = mycursor.fetchall()
         if myresult == None or len(myresult) <= 2:
             sqlFormula = "UPDATE booking_slots SET is_booked = 1, assoc_teleId = %s, assoc_nusnet = %s WHERE timeslot = %s AND date = %s"
-            data = (call.from_user.id, nusnetRetriever(call.from_user.id), str(call.data)[5:], booking_obj.date, )
+            data = (call.from_user.id, nusnetRetriever(
+                call.from_user.id), str(call.data)[5:], booking_obj.date, )
             mycursor.execute(sqlFormula, data)
             db.commit()
             await call.message.answer("Okay booked at " + booking_obj.date + " " + booking_obj.time + "\nEnjoy your workout!")
@@ -1056,20 +1113,22 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state : FSMContext):
             await call.message.answer("Sorry you have booked the maximum number of slots for yourself that day")
             await state.finish()
 
+
 @dp.callback_query_handler(state=Book.additional_time)
-async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state : FSMContext):
+async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state: FSMContext):
     """
     Allow user to repick more time slots by activating the bookStageViewSlotsCycle function which is essentially
     a non-CallbackQuery version of bookStageViewSlots.
     """
     if call.data == "Yes":
-        #await call.message.answer("Debug")
-        #await state.set_state(Book.repicked_date)
-        #Have to explicity call function as it is neither from query or user message
+        # await call.message.answer("Debug")
+        # await state.set_state(Book.repicked_date)
+        # Have to explicity call function as it is neither from query or user message
         await bookStageViewSlotsCycle(call.message, state, call.from_user.id)
     else:
         await call.message.answer("Thank you! Slots booked, use /checkactive to check your bookings! 😃")
         await state.finish()
+
 
 @dp.message_handler(state='*', commands=['checkactive'])
 async def checkMyGymSlots(message: types.Message):
@@ -1101,14 +1160,16 @@ async def checkMyGymSlots(message: types.Message):
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
-    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), str(curr_time), )
+    data = (message.from_user.id, nusnetRetriever(
+        message.from_user.id), str(curr_date), str(curr_time), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     res = []
     for i in myresult:
         res.append(i)
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date > %s"
-    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), )
+    data = (message.from_user.id, nusnetRetriever(
+        message.from_user.id), str(curr_date), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     for i in myresult:
@@ -1119,22 +1180,25 @@ async def checkMyGymSlots(message: types.Message):
         str1 = "⌛Slots booked on\n\n"
         for i in res:
             str1 += str(i[1]) + " on " + str(i[2])[:-3] + " 👌\n\n"
-            #await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
+            # await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
         await message.reply(str1)
 
+
 @dp.message_handler(commands=["unbook"])
-async def unBook(message: types.Message, state : FSMContext):
+async def unBook(message: types.Message, state: FSMContext):
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
-    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), str(curr_time), )
+    data = (message.from_user.id, nusnetRetriever(
+        message.from_user.id), str(curr_date), str(curr_time), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     res = []
     for i in myresult:
         res.append(i)
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date > %s"
-    data = (message.from_user.id, nusnetRetriever(message.from_user.id), str(curr_date), )
+    data = (message.from_user.id, nusnetRetriever(
+        message.from_user.id), str(curr_date), )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     for i in myresult:
@@ -1146,7 +1210,7 @@ async def unBook(message: types.Message, state : FSMContext):
         responses = []
         for i in res:
             responses.append(str(i[1]) + " " + str(i[2]))
-        
+
         buttons = [InlineKeyboardButton(
             text=md.text(button_label),
             callback_data=f"{button_label}"
@@ -1155,8 +1219,10 @@ async def unBook(message: types.Message, state : FSMContext):
         await message.reply("Choose the slot that you wish to unbook", reply_markup=keyboard)
         await state.set_state(Book.picked_unbook_date)
 
-#To be explicity called if user wishes to unbook more slots
-async def unBookCycle(message: types.Message, state : FSMContext, id):
+# To be explicity called if user wishes to unbook more slots
+
+
+async def unBookCycle(message: types.Message, state: FSMContext, id):
     curr_date = datetime.now().date()
     curr_time = datetime.now().strftime("%H:%M:%S")
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
@@ -1179,7 +1245,7 @@ async def unBookCycle(message: types.Message, state : FSMContext, id):
         responses = []
         for i in res:
             responses.append(str(i[1]) + " " + str(i[2]))
-        
+
         buttons = [InlineKeyboardButton(
             text=md.text(button_label),
             callback_data=f"{button_label}"
@@ -1188,25 +1254,28 @@ async def unBookCycle(message: types.Message, state : FSMContext, id):
         await message.reply("Choose the slot that you wish to unbook", reply_markup=keyboard)
         await state.set_state(Book.picked_unbook_date)
 
+
 @dp.callback_query_handler(state=Book.picked_unbook_date)
-async def unBookHandler(call: types.CallbackQuery, state : FSMContext):
+async def unBookHandler(call: types.CallbackQuery, state: FSMContext):
     date = str(call.data.split()[0])
     time = str(call.data.split()[1])
     sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s, assoc_nusnet = %s WHERE date = %s AND timeslot = %s AND (assoc_teleId = %s OR assoc_nusnet = %s)"
-    mycursor.execute(sqlFormula, (None, None, date, time, call.from_user.id, nusnetRetriever(call.from_user.id), ))
+    mycursor.execute(sqlFormula, (None, None, date, time,
+                     call.from_user.id, nusnetRetriever(call.from_user.id), ))
     db.commit()
     await call.message.answer("Okay unbooked slot at " + date + " " + time)
     responses = ["Yes", "No"]
     buttons = [InlineKeyboardButton(
         text=md.text(button_label),
         callback_data=f"{button_label}"
-            ) for button_label in responses]
+    ) for button_label in responses]
     keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
     await call.message.answer("Would like you to unbook additional slots?", reply_markup=keyboard)
     await state.set_state(Book.picked_unbook_additional)
 
+
 @dp.callback_query_handler(state=Book.picked_unbook_additional)
-async def unBookMoreHandler(call: types.CallbackQuery, state : FSMContext):
+async def unBookMoreHandler(call: types.CallbackQuery, state: FSMContext):
     if call.data == "Yes":
         await unBookCycle(call.message, state, call.from_user.id)
     else:
@@ -1215,16 +1284,18 @@ async def unBookMoreHandler(call: types.CallbackQuery, state : FSMContext):
 
 
 def authenticate():
-    creds = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
     return creds
+
 
 def upload_photo(file_path, id):
     creds = authenticate()
     service = build('drive', 'v3', credentials=creds)
 
     file_metadata = {
-        'name' : id,
-        'parents' : [PARENT_FOLDER_ID]
+        'name': id,
+        'parents': [PARENT_FOLDER_ID]
     }
 
     file = service.files().create(
@@ -1233,9 +1304,8 @@ def upload_photo(file_path, id):
     ).execute()
 
 
-
 @dp.message_handler(commands=["report"])
-async def report(message: types.Message, state : FSMContext):
+async def report(message: types.Message, state: FSMContext):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
@@ -1248,26 +1318,28 @@ async def report(message: types.Message, state : FSMContext):
         reports[message.from_user.id] = reportObj
         await state.set_state(Reporting.await_feedback)
 
+
 @dp.message_handler(state=Reporting.await_feedback)
 async def feedbackHandler(message: types.Message, state: FSMContext):
     reportObj = reports[message.from_user.id]
     reportObj.text = message.text
     sqlFormula = "INSERT INTO reports (report, teleId, nusnet) VALUES (%s, %s, %s)"
-    data = (message.text, message.from_user.id, nusnetRetriever(message.from_user.id))
+    data = (message.text, message.from_user.id,
+            nusnetRetriever(message.from_user.id))
     mycursor.execute(sqlFormula, data)
     db.commit()
     responses = ["Yes", "No"]
     buttons = [InlineKeyboardButton(
         text=md.text(button_label),
         callback_data=f"{button_label}"
-            ) for button_label in responses]
+    ) for button_label in responses]
     keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
     await message.reply("Do you wish to submit a photo as well?", reply_markup=keyboard)
     await state.set_state(Reporting.await_photo_response)
 
 
 @dp.callback_query_handler(state=Reporting.await_photo_response)
-async def photoReponseHandler(call:types.CallbackQuery, state : FSMContext):
+async def photoReponseHandler(call: types.CallbackQuery, state: FSMContext):
     if call.data == "Yes":
         await call.message.answer("Okay, please submit your photo")
         await state.set_state(Reporting.await_photo)
@@ -1275,7 +1347,9 @@ async def photoReponseHandler(call:types.CallbackQuery, state : FSMContext):
         await call.message.answer("Okay your report has been submitted, thank you!")
         await state.finish()
 
-#Helper function to retrieve reportid for tagging of photos to match the report in db
+# Helper function to retrieve reportid for tagging of photos to match the report in db
+
+
 def reportIdRetriever(id):
     sqlFormula = "SELECT * FROM reports WHERE teleId = %s"
     mycursor.execute(sqlFormula, (id, ))
@@ -1284,40 +1358,40 @@ def reportIdRetriever(id):
 
 
 @dp.message_handler(state=Reporting.await_photo, content_types=["any"])
-async def photoSubmissionHandler(message : types.Message, state : FSMContext):
+async def photoSubmissionHandler(message: types.Message, state: FSMContext):
     print(message.content_type)
     if message.content_type != 'photo':
         await message.reply("Please submit a photo, if you do not wish to, please /exit, your text feedback will still be submitted!")
     else:
-        #Create a unique folder for each user so as to prevent overriding of photo by other users
+        # Create a unique folder for each user so as to prevent overriding of photo by other users
         user_folder = os.path.join("includes/", str(message.from_user.id))
         os.makedirs(user_folder, exist_ok=True)
-        photo = await message.photo[-1].download("includes/" + str(message.from_user.id) +"/" + str(reportIdRetriever(message.from_user.id)) + ".jpg")
-        #Left below as commented to track my progress to getting this done, was a pain :p
+        photo = await message.photo[-1].download("includes/" + str(message.from_user.id) + "/" + str(reportIdRetriever(message.from_user.id)) + ".jpg")
+        # Left below as commented to track my progress to getting this done, was a pain :p
 
-        #files = glob.glob(os.path.join("includes/" + str(message.from_user.id) + "/photos", '*'))
-        #last_file = max(files, key=os.path.getctime)
-        #print(last_file)
-        #file_path = "includes/" + str(message.from_user.id) + "/photos/file_0.jpg"
-        #file_id = message.photo[-1].file_id
-        #file = await bot.get_file(file_id)
-        #file_path = file.file_path
-        #print(file_path)
-        #file_path = os.path.join("includes/", photo.file_path)
+        # files = glob.glob(os.path.join("includes/" + str(message.from_user.id) + "/photos", '*'))
+        # last_file = max(files, key=os.path.getctime)
+        # print(last_file)
+        # file_path = "includes/" + str(message.from_user.id) + "/photos/file_0.jpg"
+        # file_id = message.photo[-1].file_id
+        # file = await bot.get_file(file_id)
+        # file_path = file.file_path
+        # print(file_path)
+        # file_path = os.path.join("includes/", photo.file_path)
         try:
-            upload_photo("includes/" + str(message.from_user.id) + "/" + str(reportIdRetriever(message.from_user.id)) + ".jpg", reportIdRetriever(message.from_user.id))
+            upload_photo("includes/" + str(message.from_user.id) + "/" + str(reportIdRetriever(
+                message.from_user.id)) + ".jpg", reportIdRetriever(message.from_user.id))
             await state.finish()
             await message.reply("Okay feedback submitted with photo thank you!")
         except:
             await message.reply("Sorry, error when submitting do submit again or /exit")
         photo.close()
-        #Delete the folder so as to free up space
+        # Delete the folder so as to free up space
         shutil.rmtree("includes/" + str(message.from_user.id))
 
 
-        
 @dp.message_handler(commands=["viewresponse"])
-async def viewResponses(message : types.Message, state : FSMContext):
+async def viewResponses(message: types.Message, state: FSMContext):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
@@ -1337,25 +1411,26 @@ async def viewResponses(message : types.Message, state : FSMContext):
             str1 = "You may click on the report id to check on responses by clubsoc members!\n\n"
             keyboard_responses = []
             for i in myresult:
-                str1 += "Report ID: " + str(i[-2]) + "\n\n" 
+                str1 += "Report ID: " + str(i[-2]) + "\n\n"
                 if i[-1] == 0:
-                    #str1 += "Report ID: " + str(i[-2]) + "\n" 
+                    # str1 += "Report ID: " + str(i[-2]) + "\n"
                     str1 += i[0] + "\nNot responded to yet 😔\n\n"
                 else:
-                    #str1 += "Report ID: " + i[-2] + "\n" 
+                    # str1 += "Report ID: " + i[-2] + "\n"
                     str1 += i[0] + "\nResponded! 🔥\n\n"
                     keyboard_responses.append(str(i[-2]))
             keyboard_responses.append("Exit")
             buttons = [InlineKeyboardButton(
                 text=md.text(button_label),
                 callback_data=f"{button_label}"
-                    ) for button_label in keyboard_responses]
+            ) for button_label in keyboard_responses]
             keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
             await message.reply(str1, reply_markup=keyboard)
             await state.set_state(viewReport.clicked_id)
 
+
 @dp.callback_query_handler(state=viewReport.clicked_id)
-async def viewResponseHandler(call : types.CallbackQuery, state : FSMContext):
+async def viewResponseHandler(call: types.CallbackQuery, state: FSMContext):
     if call.data == "Exit":
         await state.finish()
         await call.message.answer("Okay exited!")
@@ -1371,24 +1446,51 @@ async def viewResponseHandler(call : types.CallbackQuery, state : FSMContext):
         await state.finish()
 
 
+@dp.message_handler(commands=["equipment"])
+async def equipmentCheck(message: types.Message, state: FSMContext):
+    sqlFormulaWeights = "SELECT * FROM equipment WHERE weight IS NOT NULL"
+    mycursor.execute(sqlFormulaWeights)
+    myresult = mycursor.fetchall()
+    dict_weight = {}
+    for i in myresult:
+        if i[1] not in dict_weight:
+            dict_weight[i[1]] = {}
+        else:
+            if i[2] == 1:
+                if i[3] not in dict_weight[i[1]]:
+                    dict_weight[i[1]][i[3]] = 1
+                else:
+                    dict_weight[i[1]][i[3]] += 1
+    # print(dict_weight)
+    str1 = "<b><u>Functioning Weights</u></b>\n\n"
+    for i in dict_weight:
+        if len(dict_weight[i]) != 0:
+            str1 += "<b>" + i + "</b>" + "\n\n"
+            for j in dict_weight[i]:
+                str1 += str(j) + "kg" + " Count:" + str(dict_weight[i][j]) + "\n\n"
     
 
+    sqlFormulaWeights = "SELECT * FROM equipment WHERE weight IS NULL"
+    mycursor.execute(sqlFormulaWeights)
+    myresult = mycursor.fetchall()
+    dict_nonweight = {}
+    str1 += "<b><u>Other Equipment</u></b>\n\n"
+    for i in myresult:
+        str1 += "<b>" + i[1] + "</b>" + "\n\n"
+        if i[2] == 1:
+            str1 += "Working Condition\n\n"
+        else:
+            str1 += "Not usable 😔\n" + "Comments: " + i[4] + "\n\n"
+    await message.reply(str1, parse_mode="HTML") 
 
 
 
 
 
 
-
-
-
-
-
-
-
-#Leave this at bottom to catch unknown commands or text input by users
+# Leave this at bottom to catch unknown commands or text input by users
 @dp.message_handler(state="*")
-async def echo(message: types.Message, state : FSMContext):
+async def echo(message: types.Message, state: FSMContext):
     """
     Message handler for catching unknown commands or text input by users.
 
@@ -1398,6 +1500,7 @@ async def echo(message: types.Message, state : FSMContext):
     current_state = await state.get_state()
     print(f"Current state: {current_state}")
     await message.reply("Unknown command, use / to check for available commands")
+
 
 @dp.callback_query_handler(state="*")
 async def echo1(call: types.CallbackQuery):

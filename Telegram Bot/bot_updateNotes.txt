@@ -52,3 +52,6 @@ the relevant slots to be vacant.)
 
 0.3.1
 1) Added some checks to ensure user is registered before he can submit reports.
+
+0.3.2
+1) Able to view equipment status. Seperated into weights and other.
