@@ -93,6 +93,10 @@ class Reporting(StatesGroup):
     await_photo_response = State()
     await_photo = State()
 
+#State machines for viewing response to reports
+class viewReport(StatesGroup):
+    clicked_id = State()
+
 
 #Dictionary for user creation Useful for profile creation.
 users = {}
@@ -1303,8 +1307,54 @@ async def photoSubmissionHandler(message : types.Message, state : FSMContext):
         #Delete the folder so as to free up space
         shutil.rmtree("includes/" + str(message.from_user.id))
 
-        
 
+        
+@dp.message_handler(commands=["viewresponse"])
+async def viewResponses(message : types.Message, state : FSMContext):
+    nusnet = nusnetRetriever(message.from_user.id)
+    sqlFormula = "SELECT * FROM reports WHERE nusnet = %s"
+    data = (nusnet, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    res = []
+    str1 = "You may click on the report id to check on responses by clubsoc members!\n\n"
+    keyboard_responses = []
+    for i in myresult:
+        str1 += "Report ID: " + str(i[-2]) + "\n\n" 
+        if i[-1] == 0:
+            #str1 += "Report ID: " + str(i[-2]) + "\n" 
+            str1 += i[0] + "\nNot responded to yet 😔\n\n"
+        else:
+            #str1 += "Report ID: " + i[-2] + "\n" 
+            str1 += i[0] + "\nResponded! 🔥\n\n"
+            keyboard_responses.append(str(i[-2]))
+    keyboard_responses.append("Exit")
+    buttons = [InlineKeyboardButton(
+        text=md.text(button_label),
+        callback_data=f"{button_label}"
+            ) for button_label in keyboard_responses]
+    keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+    await message.reply(str1, reply_markup=keyboard)
+    await state.set_state(viewReport.clicked_id)
+
+@dp.callback_query_handler(state=viewReport.clicked_id)
+async def viewResponseHandler(call : types.CallbackQuery, state : FSMContext):
+    if call.data == "Exit":
+        await state.finish()
+        await call.message.answer("Okay exited!")
+    else:
+        sqlFormula = "SELECT * FROM reports_response WHERE reportId = %s"
+        data = (int(call.data), )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        str1 = "Responses to report ID: " + call.data + "\n\n"
+        for i in myresult:
+            str1 += i[-1] + "\n\n"
+        await call.message.answer(str1)
+        await state.finish()
+
+
+    
 
 
 
