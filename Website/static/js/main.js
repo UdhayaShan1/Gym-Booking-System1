@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
+    var equipmentButton = document.getElementById("equipment")
+    equipmentButton.addEventListener("click", function(event) {
+        event.preventDefault()
+        window.location.href = "/equipmentpage"
+    })
+
+
+
     var reportButton = document.getElementById("reports")
     reportButton.addEventListener("click", function(event) {
         event.preventDefault();
