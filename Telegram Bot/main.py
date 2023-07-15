@@ -191,7 +191,7 @@ async def start(message: types.Message, state : FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.2.9 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.3.1 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     """
@@ -1236,10 +1236,17 @@ def upload_photo(file_path, id):
 
 @dp.message_handler(commands=["report"])
 async def report(message: types.Message, state : FSMContext):
-    await message.reply("Please state your feedback")
-    reportObj = Report(message.from_user.id)
-    reports[message.from_user.id] = reportObj
-    await state.set_state(Reporting.await_feedback)
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (message.from_user.id, )
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    if len(myresult) == 0:
+        await message.reply("You are not registered!")
+    else:
+        await message.reply("Please state your feedback")
+        reportObj = Report(message.from_user.id)
+        reports[message.from_user.id] = reportObj
+        await state.set_state(Reporting.await_feedback)
 
 @dp.message_handler(state=Reporting.await_feedback)
 async def feedbackHandler(message: types.Message, state: FSMContext):
@@ -1311,31 +1318,41 @@ async def photoSubmissionHandler(message : types.Message, state : FSMContext):
         
 @dp.message_handler(commands=["viewresponse"])
 async def viewResponses(message : types.Message, state : FSMContext):
-    nusnet = nusnetRetriever(message.from_user.id)
-    sqlFormula = "SELECT * FROM reports WHERE nusnet = %s"
-    data = (nusnet, )
+    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
+    data = (message.from_user.id, )
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
-    res = []
-    str1 = "You may click on the report id to check on responses by clubsoc members!\n\n"
-    keyboard_responses = []
-    for i in myresult:
-        str1 += "Report ID: " + str(i[-2]) + "\n\n" 
-        if i[-1] == 0:
-            #str1 += "Report ID: " + str(i[-2]) + "\n" 
-            str1 += i[0] + "\nNot responded to yet 😔\n\n"
+    if len(myresult) == 0:
+        await message.reply("You are not registred!")
+    else:
+        nusnet = nusnetRetriever(message.from_user.id)
+        sqlFormula = "SELECT * FROM reports WHERE nusnet = %s"
+        data = (nusnet, )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        if len(myresult) == 0:
+            await message.reply("You have not submitted any feedback!")
         else:
-            #str1 += "Report ID: " + i[-2] + "\n" 
-            str1 += i[0] + "\nResponded! 🔥\n\n"
-            keyboard_responses.append(str(i[-2]))
-    keyboard_responses.append("Exit")
-    buttons = [InlineKeyboardButton(
-        text=md.text(button_label),
-        callback_data=f"{button_label}"
-            ) for button_label in keyboard_responses]
-    keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
-    await message.reply(str1, reply_markup=keyboard)
-    await state.set_state(viewReport.clicked_id)
+            res = []
+            str1 = "You may click on the report id to check on responses by clubsoc members!\n\n"
+            keyboard_responses = []
+            for i in myresult:
+                str1 += "Report ID: " + str(i[-2]) + "\n\n" 
+                if i[-1] == 0:
+                    #str1 += "Report ID: " + str(i[-2]) + "\n" 
+                    str1 += i[0] + "\nNot responded to yet 😔\n\n"
+                else:
+                    #str1 += "Report ID: " + i[-2] + "\n" 
+                    str1 += i[0] + "\nResponded! 🔥\n\n"
+                    keyboard_responses.append(str(i[-2]))
+            keyboard_responses.append("Exit")
+            buttons = [InlineKeyboardButton(
+                text=md.text(button_label),
+                callback_data=f"{button_label}"
+                    ) for button_label in keyboard_responses]
+            keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
+            await message.reply(str1, reply_markup=keyboard)
+            await state.set_state(viewReport.clicked_id)
 
 @dp.callback_query_handler(state=viewReport.clicked_id)
 async def viewResponseHandler(call : types.CallbackQuery, state : FSMContext):

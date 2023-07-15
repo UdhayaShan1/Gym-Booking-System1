@@ -49,3 +49,6 @@ the relevant slots to be vacant.)
 
 0.3.0
 1) Added ability to view user's reports and if there is an response to any of them, able to view the responses as well
+
+0.3.1
+1) Added some checks to ensure user is registered before he can submit reports.
