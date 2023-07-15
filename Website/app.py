@@ -538,10 +538,8 @@ def report():
         return jsonify({"status" : "success", "message" : "Entered feedback!"})
     else:
         if "email" in session:
-            return render_template("report.html")
+            return render_template("reports/report.html")
         return redirect("/")
-
-
 
     """
     file = request.files['photo']
@@ -549,6 +547,58 @@ def report():
     os.makedirs(user_folder, exist_ok=True)
     file.save("photos/str(session['email'])[0:8]/file.jpg")
     """
+
+@app.route("/viewreports")
+def viewReports():
+    if "email" not in session:
+        return redirect("/")
+    return render_template("reports/viewReports.html")
+
+@app.route('/fetchreports', methods=["POST", "GET"])
+def fetchReports():
+    if request.method != "POST":
+        return redirect("/")
+    sqlFormula = "SELECT * FROM reports WHERE nusnet = %s"
+    data = (session['email'][0:8], )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula , data)
+    myresult = mycursor.fetchall()
+    mycursor.close()
+    res = []
+    for i in myresult:
+        res.append([i[0], i[-2], i[-1]])
+    print(res)
+    return jsonify(res)
+
+@app.route("/selectedreport", methods = ["POST", "GET"])
+def selectedReport():
+    if request.method != "POST":
+        return redirect("/")
+    reportid = request.form.get("id")
+    session["reportid"] = reportid
+    return jsonify({"status" : "success"})
+
+
+@app.route("/viewresponses")
+def viewResponses():
+    if "reportid" not in session:
+        return redirect("/")
+    return render_template("reports/viewResponses.html")
+
+@app.route("/fetchresponses", methods = ["POST", "GET"])
+def fetchResponses():
+    if request.method != "POST" or "reportid" not in session:
+        return redirect("/")
+    sqlFormula = "SELECT * FROM reports_response WHERE reportId = %s"
+    data = (session["reportid"], )
+    mycursor = db.cursor()
+    mycursor.execute(sqlFormula, data)
+    myresult = mycursor.fetchall()
+    res = []
+    for i in myresult:
+        res.append(i[-1])
+    mycursor.close()
+    return jsonify(res)
 
 
 

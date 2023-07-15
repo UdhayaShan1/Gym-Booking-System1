@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* CSS styles for the header */
+        .report-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="{{ url_for('static', filename='js/viewreports.js') }}"></script>
+</head>
+<body>
+    <h1>Your reports at a glance</h1>
+    <h2>Click the report id to view any responses to them by admins.</h2>
+    <div id="reportContainer"></div>
+</body>
+</html>

@@ -15,4 +15,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
     });
 
+    var viewReport = document.getElementById("viewReports");
+    viewReport.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/viewreports";
+    })
 });

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* CSS styles for the response container */
+        #responseContainer {
+            padding: 20px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        /* CSS styles for the response headers */
+        .response-header {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="{{ url_for('static', filename='js/viewresponses.js') }}"></script>
+</head>
+<body>
+    <h1>View any responses to reports here!</h1>
+    <div id="responseContainer"></div>
+</body>
+</html>

@@ -1,4 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
+    var reportButton = document.getElementById("reports")
+    reportButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/report";
+    })
+
     var logoutButton = document.getElementById("logoutButton");
     logoutButton.addEventListener("click", function(event){
         event.preventDefault();

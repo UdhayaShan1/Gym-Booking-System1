@@ -42,3 +42,6 @@
 0.6.4
 1) Added ability to send text reports for now.
 
+0.6.5
+1) Added ability to check user submitted reports.
+2) Added ability to view responses to submitted reports.
