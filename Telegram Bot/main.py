@@ -1,4 +1,4 @@
-# Rolex Beta 0.2.9
+# Rolex Beta 0.3.2
 
 # Modules to be imported
 import mysql.connector
@@ -177,7 +177,7 @@ async def exit(message: types.Message, state: FSMContext):
         await message.reply("Okay, left current state. Use / to continue with available commands")
     await state.finish()
 
-
+#Helper function to retrieve nusnet from database using teleId
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
@@ -230,7 +230,7 @@ async def start(message: types.Message, state: FSMContext):
 
 # Check if valid nusnet id
 
-
+#Helper function to validate nusnet
 def validnusNet(input_string):
     pattern = r'^e\d{7}$'  # Regex pattern to match "e" followed by 7 digits
     match = re.match(pattern, input_string)
@@ -330,8 +330,8 @@ async def set_name(message: types.Message, state: FSMContext):
 
 # Room number validation
 
-
-def check_string_format(string):
+#Helper function to check valid room number format
+def check_room_format(string):
     pattern = r"^\d{2}-\d{2}[a-zA-Z]?$"
     if re.match(pattern, string):
         return True
@@ -356,7 +356,7 @@ async def set_room(message: types.Message, state: FSMContext):
     """
     user = users[message.from_user.id]
     s = message.text
-    if check_string_format(s):
+    if check_room_format(s):
         user.room = s
         await message.reply("Okay, what is your spotter's name?")
         await state.set_state(Form.set_spotter_name)
@@ -403,7 +403,7 @@ async def set_spotter_room(message: types.Message, state: FSMContext):
     """
     user = users[message.from_user.id]
     s = message.text
-    if check_string_format(s):
+    if check_room_format(s):
         user.spotter_room = s
         sqlFormula = "SELECT * FROM user WHERE nusnet = %s"
         data = (user.nusnet, )
@@ -519,7 +519,7 @@ async def chg_roomHandler(message: types.Message, state: FSMContext):
         state (FSMContext): The state object for managing conversation state.
     """
     s = message.text
-    if check_string_format(s):
+    if check_room_format(s):
         sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
         data = (s, message.from_id, )
         mycursor.execute(sqlFormula, data)
@@ -595,7 +595,7 @@ async def chg_roomHandler(message: types.Message, state: FSMContext):
         state (FSMContext): The state object for managing conversation state.
     """
     s = message.text
-    if check_string_format(s):
+    if check_room_format(s):
         sqlFormula = "UPDATE user SET spotterRoomNo = %s WHERE teleId = %s"
         data = (s, message.from_id, )
         mycursor.execute(sqlFormula, data)
@@ -850,14 +850,16 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
 # To be completed
 
 
-def dateValidator(s):
-    pass
-# To be completed
+def dateValidator(date_string):
+    # Regex pattern for "YYYY-MM-DD" with date <= 31
+    pattern = r'^\d{4}-(0[1-9]|1[0-2])-([0-2][1-9]|3[0-1])$'  # Regex pattern for "YYYY-MM-DD" with day validation
+    match = re.match(pattern, date_string)
+    return match is not None
 
-
-def timeValidator(s):
-    pass
-
+def timeValidator(time_string):
+    pattern = r'^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$'
+    match = re.match(pattern, time_string)
+    return match is not None
 
 @dp.callback_query_handler(state=Book.picked_date)
 async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
