@@ -38,7 +38,7 @@ body {
 
 /* Profile */
 
-.container {
+.profileContainer {
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
@@ -47,35 +47,35 @@ body {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.container h1 {
+.profileContainer h1 {
   font-size: 24px;
   margin-bottom: 10px;
 }
 
-.container p {
+.profileContainer p {
   margin-top: 0;
   margin-bottom: 20px;
 }
 
-.container table {
+.profileContainer table {
   width: 100%;
   border-collapse: collapse;
 }
 
-.container th, td {
+.profileContainer th, td {
   padding: 8px;
   text-align: left;
 }
 
-.container th {
+.profileContainer th {
   font-weight: bold;
 }
 
-.container td#email {
+.profileContainer td#email {
   font-style: italic;
 }
 
-.container button {
+.profileContainer button {
   padding: 8px 16px;
   border: none;
   background-color: #782646;
@@ -84,6 +84,6 @@ body {
   border-radius: 3px;
 }
 
-.container button:hover {
+.profileContainer button:hover {
   background-color: #864d5c;
 }
