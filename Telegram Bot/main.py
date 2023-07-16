@@ -1,4 +1,4 @@
-# Rolex Beta 0.3.5
+# Rolex Beta 0.3.6
 
 # Modules to be imported
 import mysql.connector
@@ -40,8 +40,6 @@ mycursor = db.cursor()
 
 
 logging.basicConfig(level=logging.INFO)
-
-
 
 
 ########################################### <<<MAIN CODE>>>###########################################

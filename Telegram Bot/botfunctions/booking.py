@@ -545,28 +545,34 @@ async def checkMyGymSlots(message: types.Message):
 
     2023-05-19 on 10:30 👌
     """
-    curr_date = datetime.now().date()
-    curr_time = datetime.now().strftime("%H:%M:%S")
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
-    data = (message.from_user.id, nusnetRetriever(
-        message.from_user.id), str(curr_date), str(curr_time), )
-    mycursor.execute(sqlFormula, data)
+    sqlFormula = "SELECT * FROM user where teleId = %s"
+    mycursor.execute(sqlFormula, (message.from_user.id, ))
     myresult = mycursor.fetchall()
-    res = []
-    for i in myresult:
-        res.append(i)
-    sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date > %s"
-    data = (message.from_user.id, nusnetRetriever(
-        message.from_user.id), str(curr_date), )
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchall()
-    for i in myresult:
-        res.append(i)
-    if len(res) == 0:
-        await message.reply("No active slots 😕")
+    if len(myresult) == 0:
+        await message.reply("You are not registered yet, please use /start")
     else:
-        str1 = "⌛Slots booked on\n\n"
-        for i in res:
-            str1 += str(i[1]) + " on " + str(i[2])[:-3] + " 👌\n\n"
-            # await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
-        await message.reply(str1)
+        curr_date = datetime.now().date()
+        curr_time = datetime.now().strftime("%H:%M:%S")
+        sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
+        data = (message.from_user.id, nusnetRetriever(
+            message.from_user.id), str(curr_date), str(curr_time), )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        res = []
+        for i in myresult:
+            res.append(i)
+        sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date > %s"
+        data = (message.from_user.id, nusnetRetriever(
+            message.from_user.id), str(curr_date), )
+        mycursor.execute(sqlFormula, data)
+        myresult = mycursor.fetchall()
+        for i in myresult:
+            res.append(i)
+        if len(res) == 0:
+            await message.reply("No active slots 😕")
+        else:
+            str1 = "⌛Slots booked on\n\n"
+            for i in res:
+                str1 += str(i[1]) + " on " + str(i[2])[:-3] + " 👌\n\n"
+                # await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
+            await message.reply(str1)
