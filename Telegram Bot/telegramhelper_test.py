@@ -1,5 +1,5 @@
 import unittest
-from main import validnusNet, check_room_format, dateValidator, timeValidator
+from helper_functions import validnusNet, check_room_format, dateValidator, timeValidator
 
 class NUSNetValidationTests(unittest.TestCase):
     def test_valid_nusnet(self):

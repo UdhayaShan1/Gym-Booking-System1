@@ -58,3 +58,6 @@ the relevant slots to be vacant.)
 
 0.3.3
 1) Completed and improved some helper functions.
+
+0.3.4
+1) Moved helper functions to another file as package

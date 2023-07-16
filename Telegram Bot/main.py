@@ -1,4 +1,4 @@
-# Rolex Beta 0.3.2
+# Rolex Beta 0.3.4
 
 # Modules to be imported
 import mysql.connector
@@ -27,6 +27,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import glob
 import shutil
+from helper_functions import validnusNet, check_room_format, dateValidator, timeValidator
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'includes/service_account.json'
@@ -207,7 +208,7 @@ async def start(message: types.Message, state: FSMContext):
         Bot: Already registered, directs on how to change info if needed
 
     """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.3.1 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
+    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.3.4 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
     user_id = message.from_user.id
     # Now we check if user is already in our system
     """
@@ -228,13 +229,7 @@ async def start(message: types.Message, state: FSMContext):
     await message.reply("Okay, first begin by typing your NUSNET id to check if your profile is created! 👍")
     await state.set_state(Form.set_nusnet)
 
-# Check if valid nusnet id
 
-#Helper function to validate nusnet
-def validnusNet(input_string):
-    pattern = r'^e\d{7}$'  # Regex pattern to match "e" followed by 7 digits
-    match = re.match(pattern, input_string)
-    return match is not None
 
 
 @dp.message_handler(state=Form.set_nusnet)
@@ -280,8 +275,6 @@ async def set_nusnet(message: types.Message, state: FSMContext):
             await state.finish()
 
 # Generate a random OTP
-
-
 async def generate_otp():
     otp = ''.join(random.choices(string.digits, k=4))
     return otp
@@ -328,15 +321,6 @@ async def set_name(message: types.Message, state: FSMContext):
     await message.reply("Okay, what is your room number")
     await state.set_state(Form.set_room)
 
-# Room number validation
-
-#Helper function to check valid room number format
-def check_room_format(string):
-    pattern = r"^\d{2}-\d{2}[a-zA-Z]?$"
-    if re.match(pattern, string):
-        return True
-    else:
-        return False
 
 
 @dp.message_handler(state=Form.set_room)
@@ -847,19 +831,6 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
 
-# To be completed
-
-
-def dateValidator(date_string):
-    # Regex pattern for "YYYY-MM-DD" with date <= 31
-    pattern = r'^\d{4}-(0[1-9]|1[0-2])-([0-2][1-9]|3[0-1])$'  # Regex pattern for "YYYY-MM-DD" with day validation
-    match = re.match(pattern, date_string)
-    return match is not None
-
-def timeValidator(time_string):
-    pattern = r'^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$'
-    match = re.match(pattern, time_string)
-    return match is not None
 
 @dp.callback_query_handler(state=Book.picked_date)
 async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
@@ -1484,9 +1455,6 @@ async def equipmentCheck(message: types.Message, state: FSMContext):
         else:
             str1 += "Not usable 😔\n" + "Comments: " + i[4] + "\n\n"
     await message.reply(str1, parse_mode="HTML") 
-
-
-
 
 
 
