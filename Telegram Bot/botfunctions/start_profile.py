@@ -1,3 +1,4 @@
+#Package with profile creation functions
 import mysql.connector
 from aiogram.utils import executor
 from aiogram.types import ParseMode
@@ -32,28 +33,10 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-pwd = None
-with open("includes\database_pwd.txt") as f:
-    pwd = f.read().strip()
-db = mysql.connector.connect(
-    host="localhost",
-    user='root',
-    passwd=pwd,
-    database="testdatabase"
-)
+from botfunctions.databaseconn_dispatcher import db, dp
 
-mycursor = db.cursor()
 
 logging.basicConfig(level=logging.INFO)
-
-# Set up dispatcher
-TOKEN = None
-with open("includes\dot_token.txt") as f:
-    TOKEN = f.read().strip()
-
-bot = Bot(token=TOKEN)
-storage = MemoryStorage()
-dp = Dispatcher(bot, storage=storage)
 
 
 ########################################### <<<MAIN CODE>>>###########################################
@@ -182,6 +165,7 @@ async def set_nusnet(message: types.Message, state: FSMContext):
     user = users[message.from_user.id]
     # user = users[message.from_user.id]
     nusnet = str(message.text).lower()
+    mycursor = db.cursor()
     if validnusNet(nusnet) == False:
         await message.reply("Please type valid NUSNET id!")
     else:
@@ -217,6 +201,7 @@ async def set_nusnet(message: types.Message, state: FSMContext):
         else:
             await message.reply("You have already been registered! Use /myinfo to check again")
             await state.finish()
+    mycursor.close()
 
 async def set_name(message: types.Message, state: FSMContext):
     """
@@ -280,6 +265,7 @@ async def set_spotter_name(message: types.Message, state: FSMContext):
     await state.set_state(Form.set_spotter_room)
 
 async def set_spotter_room(message: types.Message, state: FSMContext):
+    mycursor = db.cursor()
     """
     Handler for setting the spotter's room number during the registration process.
     If valid room, add user into SQL database.
@@ -319,6 +305,7 @@ async def set_spotter_room(message: types.Message, state: FSMContext):
         await state.finish()
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
+    mycursor.close()
 
 async def myinfo(message: types.Message):
     """
@@ -332,6 +319,7 @@ async def myinfo(message: types.Message):
     """
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_id, )
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     if myresult == None:
@@ -343,3 +331,4 @@ async def myinfo(message: types.Message):
         else:
             verifiedStr = "\n\nYou are verified!"
         await message.reply("Your NUSNET is " + myresult[-2] + "\n\nYour name is " + myresult[3] + "\n\nYour room number is " + myresult[2] + "\n\nYour spotter is " + myresult[-4] + "\n\nYour spotter room number is " + myresult[-3] + verifiedStr)
+    mycursor.close()

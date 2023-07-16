@@ -1,4 +1,4 @@
-# Rolex Beta 0.3.4
+# Rolex Beta 0.3.5
 
 # Modules to be imported
 import mysql.connector
@@ -33,30 +33,15 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'includes/service_account.json'
 PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
-# Database connection, we will use mySQL and localhost for now
-
-pwd = None
-with open("includes\database_pwd.txt") as f:
-    pwd = f.read().strip()
-db = mysql.connector.connect(
-    host="localhost",
-    user='root',
-    passwd=pwd,
-    database="testdatabase"
-)
+#Import database and dispatcher from package
+from botfunctions.databaseconn_dispatcher import db, dp
 
 mycursor = db.cursor()
 
+
 logging.basicConfig(level=logging.INFO)
 
-# Set up dispatcher
-TOKEN = None
-with open("includes\dot_token.txt") as f:
-    TOKEN = f.read().strip()
 
-bot = Bot(token=TOKEN)
-storage = MemoryStorage()
-dp = Dispatcher(bot, storage=storage)
 
 
 ########################################### <<<MAIN CODE>>>###########################################
@@ -182,8 +167,10 @@ async def exit(message: types.Message, state: FSMContext):
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
+    mycursor.close()
     return myresult[-2]
 
 
@@ -228,125 +215,16 @@ dp.register_message_handler(chg_nameHandler1, state=Form.change_spotter_name)
 dp.register_message_handler(chg_room1, commands=['spotterroomchg'])
 dp.register_message_handler(chg_roomHandler1, state=Form.change_spotter_room)
 
+from botfunctions.verify_delete import verify, otp_handler, deleteMyDetails, deleteHandler2
+dp.register_message_handler(verify, commands=['verify'])
+
+dp.register_message_handler(otp_handler, state=Form.otp_verify)
+
+dp.register_message_handler(deleteMyDetails, state='*', commands=['delete'])
+
+dp.register_callback_query_handler(deleteHandler2, state=Form.delete_details)
 
 
-@dp.message_handler(commands=['verify'])
-async def verify(message: types.Message, state: FSMContext):
-    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
-    data = (message.from_user.id, )
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchone()
-    if myresult == None:
-        await message.reply("You are not in the system, please /start first 👍")
-    else:
-        if myresult[-1] == 1:
-            await message.reply("You are already verified!")
-        else:
-            if message.from_user.id not in users:
-                user = User(message.from_user.id)
-                users[message.from_user.id] = user
-            else:
-                user = users[message.from_user.id]
-
-            otp = await send_otp(myresult[-2])
-            user.otp = otp
-            await message.reply("Okay, OTP sent to your NUSNET email, please type it out")
-            await state.set_state(Form.otp_verify)
-
-
-@dp.message_handler(state=Form.otp_verify)
-async def otp_handler(message: types.Message, state: FSMContext):
-    # print(users)
-    otp_given = message.text
-    user = users[message.from_user.id]
-    if otp_given == user.otp:
-        sqlFormula = "UPDATE user SET verifiedTele = %s WHERE teleId = %s"
-        data = (1, message.from_user.id, )
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-        await message.reply("Woo! 😺 You are now verified and can proceed to book!")
-        await state.finish()
-    else:
-        await message.reply("😔 Sorry, OTP is not correct, try /verify again!")
-        await state.finish()
-
-
-@dp.message_handler(state='*', commands=['delete'])
-async def deleteMyDetails(message: types.Message, state: FSMContext):
-    """
-    Handler for deleting user details.
-
-    Usage:
-        [Command] - /delete
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-
-    """
-    button1 = KeyboardButton('Yes!')
-    button2 = KeyboardButton('No!')
-    keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(button1).add(button2)
-    """
-
-    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
-    data = (message.from_user.id, )
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchone()
-    if myresult == None:
-        await message.reply("You are not registered in the system.")
-    else:
-        # Attempt at InLineKeyboard instead
-        button3 = InlineKeyboardButton(text="Yes!", callback_data="Yes!")
-        button4 = InlineKeyboardButton(text="No!", callback_data="No!")
-        keyboard2 = InlineKeyboardMarkup().add(button3).add(button4)
-        await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our mySQL database and any attached bookings", reply_markup=keyboard2)
-        await state.set_state(Form.delete_details)
-
-"""
-@dp.message_handler(state=Form.delete_details)
-async def deleteHandler(message: types.Message, state : FSMContext):
-    if message.text == "Yes!":
-        sqlFormula = "DELETE FROM user WHERE teleId = %s"
-        data = (message.from_id, )
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-        await message.reply("Data deleted, use /start to begin user creation again")
-    else:
-        await message.reply("Data not deleted..")
-    #Add code to ammend all associated bookings to have teleId and spotterId to None.
-    await state.finish()
-"""
-
-
-@dp.callback_query_handler(state=Form.delete_details)
-async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
-    """
-    Callback handler for confirming the deletion of user details.
-
-    Usage:
-        [CallbackData] - "Yes!" or "No!"
-
-    Args:
-        call (types.CallbackQuery): The incoming callback query object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    if call.data == "Yes!":
-        nusnet = nusnetRetriever(call.from_user.id)
-        sqlFormula = "UPDATE user SET teleId = %s, roomNo = %s, name = %s, spotterName = %s, spotterRoomNo = %s, verifiedTele = 0 WHERE teleId = %s"
-        data = (None, None, None, None, None, call.from_user.id, )
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-
-        sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s, assoc_nusnet = %s WHERE (assoc_teleId = %s OR assoc_nusnet = %s)"
-        mycursor.execute(sqlFormula, (None, None, call.from_user.id, nusnet, ))
-        db.commit()
-        await call.message.answer("Data deleted, use /start to begin user creation again")
-    else:
-        await call.message.answer("Data not deleted..")
-    # Add code to ammend all associated bookings to have teleId and spotterId to None.
-    await state.finish()
 
 ############## <<<BOOKING LOGIC>>>##############
 
@@ -397,6 +275,7 @@ async def book(message: types.Message, state: FSMContext):
     """
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     if myresult != None and myresult[-1] == 0:
@@ -428,6 +307,7 @@ async def book(message: types.Message, state: FSMContext):
         calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
+    mycursor.close()
 
 
 async def bookCycle(message: types.Message, state: FSMContext, id):
@@ -444,6 +324,7 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
     # Check if user is in the system in the first place
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     if myresult == None:
@@ -470,6 +351,7 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
         calendar_keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
+    mycursor.close()
 
 
 @dp.callback_query_handler(state=Book.picked_date)
@@ -515,6 +397,7 @@ async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
     - state: The FSMContext object for managing the conversation state.
     """
     # await call.message.answer(call.data)
+    mycursor = db.cursor()
     booking_obj = bookings[call.from_user.id]
     booking_obj.date = str(call.data)[5:]
     now = datetime.now()
@@ -582,7 +465,7 @@ async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
                     row_width=2).add(*buttons).add(button1)
                 await call.message.answer(str1, reply_markup=calendar_keyboard)
                 await state.set_state(Book.picked_time)
-
+    mycursor.close()
 # This function must be explicitly called if and only if user asks to book agn for same day
 
 
