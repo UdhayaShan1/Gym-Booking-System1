@@ -5,7 +5,18 @@
     <link rel="stylesheet" href="..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 </head>
-<body>  
+<body> 
+    <div class="navbar">
+        <h1>Welcome! <span id="email"></span></h1>
+        <a href="" id="homeButton">Home</a>
+        <a class="active" href="" id="profileButton">Profile</a>
+        <a href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div>
+    
     <div class="profileContainer">
         <h1>User Profile</h1>
         <p>Please set your details here before booking!</p>
