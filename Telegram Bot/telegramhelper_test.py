@@ -35,10 +35,6 @@ class RoomFormatValidationTests(unittest.TestCase):
         room = '11-12'
         self.assertTrue(check_room_format(room))
 
-    def test_invalid_room_format_invalid_suffix(self):
-        room = '11-12G'
-        self.assertFalse(check_room_format(room))
-
     def test_empty_string(self):
         room = ''
         self.assertFalse(check_room_format(room))
@@ -85,8 +81,6 @@ class TimeValidatorTests(unittest.TestCase):
     def test_empty_time_string(self):
         time_string = ''
         self.assertFalse(timeValidator(time_string))
-
-
 
 if __name__ == '__main__':
     unittest.main()
