@@ -27,7 +27,7 @@ from googleapiclient.discovery import build
 from google.oauth2 import service_account
 import glob
 import shutil
-from helper_functions import validnusNet, check_room_format, dateValidator, timeValidator
+from botfunctions.helper_functions import validnusNet, check_room_format, dateValidator, timeValidator, generate_otp, send_otp
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 SERVICE_ACCOUNT_FILE = 'includes/service_account.json'
@@ -187,407 +187,47 @@ def nusnetRetriever(id):
     return myresult[-2]
 
 
-# Probably will use to handle user familirization with bot
-@dp.message_handler(commands=['start'])
-async def start(message: types.Message, state: FSMContext):
-    """
-    Handler for the '/start' command. Initializes the registration process for the user.
 
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state context of the conversation.
+#Profile Creation
+from botfunctions.start_profile import start, set_nusnet, set_name, set_room, set_spotter_name, set_spotter_room, myinfo
+dp.register_message_handler(start, commands=['start'])
 
-    Usage:
-        /start - Start the gym booking bot and register (if not already registered).
+dp.register_message_handler(set_nusnet, state=Form.set_nusnet)
 
-    Example:
-        User (not registered): /start
-        Bot: Begins form creation process
+dp.register_message_handler(set_name, state=Form.set_name)
 
-        User (registered): /start
-        Bot: Already registered, directs on how to change info if needed
+dp.register_message_handler(set_room, state=Form.set_room)
 
-    """
-    await message.reply("Thank you for using our gym booking bot, powered by Aiogram, Python and MySQL.\nVersion: 0.3.4 Track progress and read patch notes on GitHub!\nCreated by Rolex\nContact @frostbitepillars and @ for any queries")
-    user_id = message.from_user.id
-    # Now we check if user is already in our system
-    """
-    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
-    data = (user_id, )
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchone()
-    if myresult != None:
-        await message.reply("You are already registered, if you would like to change details, type / and check appropriate commands ")
-    else:
-        await message.reply("Appears either you are not in the system!\nPlease Register!")
-        await message.reply("Lets begin by typing your NUSNET ID!")
-        #await message.reply("Let's begin by typing your name")
-        user = User(user_id)
-        users[user_id] = user
-        await state.set_state(Form.set_nusnet)
-    """
-    await message.reply("Okay, first begin by typing your NUSNET id to check if your profile is created! 👍")
-    await state.set_state(Form.set_nusnet)
+dp.register_message_handler(set_spotter_name, state=Form.set_spotter_name)
 
+dp.register_message_handler(set_spotter_room, state=Form.set_spotter_room)
 
+dp.register_message_handler(myinfo, commands=['myinfo'])
 
+#Change profile
+from botfunctions.change_profile import (
+    chg_name,
+    chg_nameHandler,
+    chg_room,
+    chg_roomHandler,
+    chg_name1,
+    chg_nameHandler1,
+    chg_room1,
+    chg_roomHandler1,
+)
 
-@dp.message_handler(state=Form.set_nusnet)
-async def set_nusnet(message: types.Message, state: FSMContext):
-    users[message.from_user.id] = User(message.from_user.id)
-    user = users[message.from_user.id]
-    # user = users[message.from_user.id]
-    nusnet = str(message.text).lower()
-    if validnusNet(nusnet) == False:
-        await message.reply("Please type valid NUSNET id!")
-    else:
-        sqlFormula = "SELECT * FROM user WHERE nusnet = %s"
-        data = (nusnet, )
-        mycursor.execute(sqlFormula, data)
-        myresult = mycursor.fetchone()
+dp.register_message_handler(chg_name, commands=['namechg'])
+dp.register_message_handler(chg_nameHandler, state=Form.change_name)
 
-        sqlFormula = "SELECT * FROM user WHERE nusnet = %s AND name IS NOT NULL AND roomNo IS NOT NULL AND spotterName IS NOT NULL AND spotterRoomNo IS NOT NULL;"
-        data = (nusnet, )
-        mycursor.execute(sqlFormula, data)
-        myresult1 = mycursor.fetchone()
+dp.register_message_handler(chg_room, commands=['roomchg'])
+dp.register_message_handler(chg_roomHandler, state=Form.change_room)
 
-        sqlFormula = "SELECT * FROM user WHERE nusnet = %s AND teleId IS NULL"
-        data = (nusnet, )
-        mycursor.execute(sqlFormula, data)
-        myresult2 = mycursor.fetchone()
-        if myresult == None:
-            user.nusnet = nusnet
-            await message.reply("You have not been registered yet! Begin by typing your name")
-            await state.set_state(Form.set_name)
-        elif myresult1 == None:
-            user.nusnet = nusnet
-            await message.reply("Your profile creation has not been completed! Begin by typing your name")
-            await state.set_state(Form.set_name)
-        elif myresult2 != None:
-            await message.reply("Appears you probably have registered on the website! We will tag your Telegram handle to that profile!")
-            sqlFormula = "UPDATE user SET teleId = %s WHERE nusnet = %s"
-            data = (message.from_user.id, nusnet, )
-            mycursor.execute(sqlFormula, data)
-            db.commit()
-            await state.finish()
-        else:
-            await message.reply("You have already been registered! Use /myinfo to check again")
-            await state.finish()
+dp.register_message_handler(chg_name1, commands=['spotternamechg'])
+dp.register_message_handler(chg_nameHandler1, state=Form.change_spotter_name)
 
-# Generate a random OTP
-async def generate_otp():
-    otp = ''.join(random.choices(string.digits, k=4))
-    return otp
+dp.register_message_handler(chg_room1, commands=['spotterroomchg'])
+dp.register_message_handler(chg_roomHandler1, state=Form.change_spotter_room)
 
-# Send otp to user
-
-
-async def send_otp(nusnet):
-    email_receiver = nusnet+"@u.nus.edu"
-    email_sender = "chad.ionos2@gmail.com"
-    email_pw = None
-    with open("includes\gmailPwd.txt") as f:
-        email_pw = f.read().strip()
-    em = EmailMessage()
-    em['From'] = email_sender
-    em['To'] = email_receiver
-    em["Subject"] = "Your FitBook OTP"
-    otp = await generate_otp()
-    em.set_content("Your OTP is " + otp)
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(email_sender, email_pw)
-        smtp.sendmail(email_sender, email_receiver, em.as_string())
-    return otp
-
-
-@dp.message_handler(state=Form.set_name)
-async def set_name(message: types.Message, state: FSMContext):
-    """
-    Handler for setting the user's name during the registration process.
-
-    Usage:
-        [User Input] - Set the user's name during the registration process.
-
-    Example:
-        John Doe
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state context of the conversation.
-    """
-    user = users[message.from_user.id]
-    user.name = message.text
-    await message.reply("Okay, what is your room number")
-    await state.set_state(Form.set_room)
-
-
-
-@dp.message_handler(state=Form.set_room)
-async def set_room(message: types.Message, state: FSMContext):
-    """
-    Handler for setting the user's room number during the registration process.
-
-    Usage:
-        [User Input] - Set the user's room number during the registration process.
-
-    Example:
-        11-12
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state context of the conversation.
-    """
-    user = users[message.from_user.id]
-    s = message.text
-    if check_room_format(s):
-        user.room = s
-        await message.reply("Okay, what is your spotter's name?")
-        await state.set_state(Form.set_spotter_name)
-    else:
-        await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
-
-
-@dp.message_handler(state=Form.set_spotter_name)
-async def set_spotter_name(message: types.Message, state: FSMContext):
-    """
-    Handler for setting the spotter's name during the registration process.
-
-    Usage:
-        [User Input] - Set the spotter's name during the registration process.
-
-    Example:
-        John Doe
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state context of the conversation.
-    """
-    user = users[message.from_user.id]
-    user.spotter_name = message.text
-    await message.reply("Okay what is their Room No?")
-    await state.set_state(Form.set_spotter_room)
-
-
-@dp.message_handler(state=Form.set_spotter_room)
-async def set_spotter_room(message: types.Message, state: FSMContext):
-    """
-    Handler for setting the spotter's room number during the registration process.
-    If valid room, add user into SQL database.
-
-    Usage:
-        [User Input] - Set the spotter's room number during the registration process.
-
-    Example:
-        11-12F
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state context of the conversation.
-    """
-    user = users[message.from_user.id]
-    s = message.text
-    if check_room_format(s):
-        user.spotter_room = s
-        sqlFormula = "SELECT * FROM user WHERE nusnet = %s"
-        data = (user.nusnet, )
-        mycursor.execute(sqlFormula, data)
-        myresult = mycursor.fetchone()
-        if myresult == None:
-            # Insert into SQL database
-            sqlFormula = "INSERT INTO user (teleId, roomNo, name, spotterName, spotterRoomNo, nusnet) VALUES (%s, %s, %s, %s, %s, %s)"
-            data = (message.from_user.id, user.room, user.name,
-                    user.spotter_name, user.spotter_room, user.nusnet)
-            mycursor.execute(sqlFormula, data)
-            db.commit()
-        else:
-            sqlFormula = "UPDATE user SET teleId = %s, roomNo = %s, name = %s, spotterName = %s, spotterRoomNo = %s WHERE nusnet = %s"
-            data = (message.from_user.id, user.room, user.name,
-                    user.spotter_name, user.spotter_room, user.nusnet, )
-            mycursor.execute(sqlFormula, data)
-            db.commit()
-        await message.reply("Okay info set, check via /myinfo")
-        await state.finish()
-    else:
-        await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
-
-
-@dp.message_handler(commands=['myinfo'])
-async def myinfo(message: types.Message):
-    """
-    Handler for retrieving the user's profile information.
-
-    Usage:
-        /myinfo - Retrieve the user's profile information.
-
-    Args:
-        message (types.Message): The incoming message object.
-    """
-    sqlFormula = "SELECT * FROM user WHERE teleId = %s"
-    data = (message.from_id, )
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchone()
-    if myresult == None:
-        await message.reply("You are not registered, please /start to begin profile creation")
-    else:
-        verifiedStr = ""
-        if myresult[-1] == 0:
-            verifiedStr = "\n\nYou are not verified yet, proceed to /verify!"
-        else:
-            verifiedStr = "\n\nYou are verified!"
-        await message.reply("Your NUSNET is " + myresult[-2] + "\n\nYour name is " + myresult[3] + "\n\nYour room number is " + myresult[2] + "\n\nYour spotter is " + myresult[-4] + "\n\nYour spotter room number is " + myresult[-3] + verifiedStr)
-
-
-@dp.message_handler(commands=['namechg'])
-async def chg_name(message: types.Message, state: FSMContext):
-    """
-    Handler for changing the user's name.
-
-    Usage:
-        /namechg - Initiate the name change process.
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    await message.reply("Okay, what would you like to change your name to?")
-    await state.set_state(Form.change_name)
-
-
-@dp.message_handler(state=Form.change_name)
-async def chg_nameHandler(message: types.Message, state: FSMContext):
-    """
-    Handler for changing the user's name.
-
-    Usage:
-        [User Input] - Provide the new name to change.
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    sqlFormula = "UPDATE user SET name = %s WHERE teleId = %s"
-    data = (message.text, message.from_id, )
-    mycursor.execute(sqlFormula, data)
-    db.commit()
-    await message.reply("Okay done, use /myinfo to check")
-    await state.finish()
-
-
-@dp.message_handler(commands=['roomchg'])
-async def chg_room(message: types.Message, state: FSMContext):
-    """
-    Handler for changing the user's registered room.
-
-    Usage:
-        /roomchg - Initialise the room number change process
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    await message.reply("Okay, what would you like to change your registered room to?")
-    await state.set_state(Form.change_room)
-
-
-@dp.message_handler(state=Form.change_room)
-async def chg_roomHandler(message: types.Message, state: FSMContext):
-    """
-    Handler for changing the user's registered room.
-
-    Usage:
-        [User Input] - Provide the new room number in the format XX-XX or XX-XXX.
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    s = message.text
-    if check_room_format(s):
-        sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
-        data = (s, message.from_id, )
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-        await message.reply("Okay done, use /myinfo to check")
-        await state.finish()
-    else:
-        await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
-
-
-@dp.message_handler(commands=['spotternamechg'])
-async def chg_name(message: types.Message, state: FSMContext):
-    """
-    Handler for changing the user's spotter's name.
-
-    Usage:
-        /spotternamechg - Initialise the spotter's name change process
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    await message.reply("Okay, what would you like to change your spotter's name to?")
-    await state.set_state(Form.change_spotter_name)
-
-
-@dp.message_handler(state=Form.change_spotter_name)
-async def chg_nameHandler(message: types.Message, state: FSMContext):
-    """
-    Handler for updating the user's spotter's name.
-
-    Usage:
-        [User Input] - Provide the new name for the spotter.
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    sqlFormula = "UPDATE user SET spotterName = %s WHERE teleId = %s"
-    data = (message.text, message.from_id, )
-    mycursor.execute(sqlFormula, data)
-    db.commit()
-    await message.reply("Okay done, use /myinfo to check")
-    await state.finish()
-
-
-@dp.message_handler(commands=['spotterroomchg'])
-async def chg_room(message: types.Message, state: FSMContext):
-    """
-    Handler for changing the user's registered spotter's room number.
-
-    Usage:
-        [Command] - /spotterroomchg
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    await message.reply("Okay, what would you like to change your registered spotter's room number to?")
-    await state.set_state(Form.change_spotter_room)
-
-
-@dp.message_handler(state=Form.change_spotter_room)
-async def chg_roomHandler(message: types.Message, state: FSMContext):
-    """
-    Handler for changing the user's spotter's room number.
-
-    Usage:
-        [User Input] - Provide the new room number for the spotter.
-
-    Args:
-        message (types.Message): The incoming message object.
-        state (FSMContext): The state object for managing conversation state.
-    """
-    s = message.text
-    if check_room_format(s):
-        sqlFormula = "UPDATE user SET spotterRoomNo = %s WHERE teleId = %s"
-        data = (s, message.from_id, )
-        mycursor.execute(sqlFormula, data)
-        db.commit()
-        await message.reply("Okay done, use /myinfo to check")
-        await state.finish()
-    else:
-        await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
 
 
 @dp.message_handler(commands=['verify'])

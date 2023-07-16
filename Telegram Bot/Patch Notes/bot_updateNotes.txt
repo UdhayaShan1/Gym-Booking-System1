@@ -61,3 +61,6 @@ the relevant slots to be vacant.)
 
 0.3.4
 1) Moved helper functions to another file as package
+
+0.3.5
+1) Refactoring code into packages. WIP.

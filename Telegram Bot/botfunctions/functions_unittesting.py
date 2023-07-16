@@ -1,5 +1,6 @@
 import unittest
-from helper_functions import validnusNet, check_room_format, dateValidator, timeValidator
+from unittest import IsolatedAsyncioTestCase
+from botfunctions.helper_functions import validnusNet, check_room_format, dateValidator, timeValidator, generate_otp
 
 class NUSNetValidationTests(unittest.TestCase):
     def test_valid_nusnet(self):
@@ -81,6 +82,13 @@ class TimeValidatorTests(unittest.TestCase):
     def test_empty_time_string(self):
         time_string = ''
         self.assertFalse(timeValidator(time_string))
+
+class GenerateOTPTestCase(IsolatedAsyncioTestCase):
+    async def test_generate_otp(self):
+        otp = await generate_otp()
+        self.assertEqual(len(otp), 4)  # Check if the OTP has a length of 4
+        self.assertTrue(otp.isdigit())  # Check if the OTP consists of only digits
+
 
 if __name__ == '__main__':
     unittest.main()
