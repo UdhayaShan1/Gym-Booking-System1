@@ -16,5 +16,5 @@ jobs:
         python-version: 3.x
 
     - name: Run unit tests
-      run: python -m unittest_telebot telegramhelper_test.py
+      run: python -m unittest telegramhelper_test.py
       working-directory: Telegram Bot
