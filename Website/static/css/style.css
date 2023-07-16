@@ -1,0 +1,89 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #e2dad9;
+}
+
+/* Navbar */
+
+.navbar {
+  background-color: #782646;
+  overflow: hidden;
+}
+
+.navbar h1 {
+  text-indent: 5px;
+
+}
+
+.navbar a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+
+.navbar a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+
+.navbar a.active {
+  background-color: #864d5c;
+  color: white;
+}
+
+/* Profile */
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #e2d9dd;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.container h1 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.container p {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+.container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.container th, td {
+  padding: 8px;
+  text-align: left;
+}
+
+.container th {
+  font-weight: bold;
+}
+
+.container td#email {
+  font-style: italic;
+}
+
+.container button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.container button:hover {
+  background-color: #864d5c;
+}
