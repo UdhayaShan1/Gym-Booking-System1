@@ -2,21 +2,19 @@
 <html>
 <head>
     <title>Main Page</title>
-    <style>
-
-
-    </style>
+    <link rel="stylesheet" href="..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
     <div class="navbar">
         <h1>Welcome! <span id="email"></span></h1>
-        <button id="profileButton">Profile</button>
-        <button id="bookingButton">Booking</button>
-        <button id="editBookingButton">View and Edit Bookings</button>
-        <button id="reports">Manage Reports Here</button>
-        <button id="equipment">View Equipment Status</button>
-        <button id="logoutButton">Logout</button>
+        <a class="active" href="" id="homeButton">Home</a>
+        <a href="" id="profileButton">Profile</a>
+        <a href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
     </div>
     <div class="container">
         <h1>Welcome to FitBook</h1>
