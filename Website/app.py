@@ -157,8 +157,8 @@ def login():
     if request.method == "POST":
         email = request.form['email'].lower()
         print(email)
-        if check(email) == False:
-            return jsonify({"status" : "failure", "message" : "Invalid email format"})
+        if check_email(email) == False:
+            return jsonify({"status" : "failure", "message" : "Invalid NUS email format"})
         password = request.form['password']
         sqlFormula = "SELECT * FROM user_website WHERE email = %s"
         data = (email, )
@@ -237,9 +237,6 @@ def send_otp_changepwd():
         smtp.login(email_sender, email_password)
         smtp.sendmail(email_sender, session["email"], em.as_string())
     return jsonify({"status" : "success", "message" : "sent"})
-
-
-
 
 @app.route("/change_pwd")
 def change_pwd():
