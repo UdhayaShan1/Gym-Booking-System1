@@ -67,3 +67,4 @@ the relevant slots to be vacant.)
 
 0.3.6
 1) Fixed check gym slots bug to ensure user is registered first.
+2) Refactored.
