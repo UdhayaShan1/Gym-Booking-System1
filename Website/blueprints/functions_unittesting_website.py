@@ -3,7 +3,7 @@ import unittest
 import random
 import re
 import string
-from helper_functions import (generate_otp, 
+from blueprints.helper_functions import (generate_otp, 
                              check_string_format,
                              check,
                              check_email)
