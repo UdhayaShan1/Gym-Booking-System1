@@ -14,7 +14,7 @@ import mysql.connector
 from flask_session import Session
 from datetime import datetime, timedelta
 from databaseconn import db
-from helper_functions import (generate_otp, 
+from blueprints.helper_functions import (generate_otp, 
                              check_string_format,
                              check,
                              check_email)
