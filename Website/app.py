@@ -9,24 +9,15 @@ from email.message import EmailMessage
 import ssl
 import random
 import string
-from flask_login import LoginManager, login_user, current_user, login_required, UserMixin, logout_user
+#from flask_login import LoginManager, login_user, current_user, login_required, UserMixin, logout_user
 import mysql.connector
 from flask_session import Session
 from datetime import datetime, timedelta
-
-
-# Database connection, we will use mySQL and localhost for now
-import mysql.connector
-pwd = None
-with open("includes\database_pwd.txt") as f:
-    pwd = f.read().strip()
-db = mysql.connector.connect(
-    host="localhost",
-    user='root',
-    passwd=pwd,
-    database="testdatabase",
-    connect_timeout=30
-)
+from databaseconn import db
+from blueprints.helper_functions import (generate_otp, 
+                             check_string_format,
+                             check,
+                             check_email)
 
 
 #Flask set-up
@@ -44,174 +35,17 @@ app.config["SESSION_COOKIE_SAMESITE"] = "Lax"  # Set SameSite attribute for sess
 
 Session(app)
 
+#Register blueprints
+from blueprints.auth import auth_blueprint
+app.register_blueprint(auth_blueprint, url_prefix='')
+
+
 @app.route('/')
 def home():
     return render_template("index.html")
 
 # Define a function for
 # for validating an Email
-
-
-def check(email):
-    # pass the regular expression
-    # and the string into the fullmatch() method
-    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-    if re.fullmatch(regex, email):
-        return True
-    return False
-
-# Generate a random OTP
-def generate_otp():
-    otp = ''.join(random.choices(string.digits, k=4))
-    return otp
-
-
-@app.route('/send_otp', methods=["POST"])
-def send_otp():
-    email_receiver = request.form['email']
-    sqlFormula = "SELECT * FROM user_website WHERE email = %s"
-    data = (email_receiver, )
-    mycursor = db.cursor()
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchone()
-    mycursor.close()
-    if myresult != None:
-        return jsonify({"status" : "failure", "message" : "Already registered"})
-
-    if check(email_receiver) == False:
-        return jsonify({"status" : "failure", "message" : "Invalid email format, use XXX email only"})
-    email_sender = "chad.ionos2@gmail.com"
-    email_password = None
-    with open("includes\gmailPwd.txt") as f:
-        email_password = f.read().strip()
-    subject = "OTP"
-    otp = generate_otp()
-    body = "Your OTP is " + otp;
-    session["otp"] = otp
-    em = EmailMessage()
-    em['From'] = email_sender
-    em['To'] = email_receiver
-    em['Subject'] = subject
-    em.set_content(body)
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(email_sender, email_password)
-        smtp.sendmail(email_sender, email_receiver, em.as_string())
-    return jsonify({"status" : "success", "message" : "sent"})
-
-#Use regular expressions to check if email follows NUS format
-def check_email(email):
-    pattern = r'^e\d{7}@u\.nus\.edu$'  # Regex pattern for the email format
-    match = re.match(pattern, email)
-    return match is not None
-
-
-@app.route('/register', methods=["POST", "GET"])
-def register():
-    if request.method == "POST":
-        email = request.form['email']
-        password = request.form['password']
-        otp = request.form['otp']
-        if check_email(email.lower()) == False:
-            return jsonify({"status" : "failure", "message" : "Use NUS email only"})
-        if "otp" not in session or session["otp"] != otp:
-            return jsonify({"status": "failure", "message": "Wrong OTP, try again"})
-        if check(email) == False:
-            return jsonify({"status": "failure", "message": "Invalid email format"})
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-        sqlFormula = "SELECT * FROM user_website WHERE email = %s"
-        data = (email.lower(), )
-        mycursor = db.cursor()
-        mycursor.execute(sqlFormula, data)
-        myresult = mycursor.fetchall()
-        mycursor.close()
-        if len(myresult) > 0:
-            return jsonify({"status": "success", "message": "You are registered already, proceed to login!"})
-
-        sqlFormula_insert = "INSERT INTO user_website (email, password, nusnet) VALUES (%s, %s, %s)"
-        data = (email.lower(), hashed_password, email.lower()[:8])
-        print(data)
-        mycursor = db.cursor()
-        mycursor.execute(sqlFormula_insert, data)
-        db.commit()
-        
-        sqlFormula_checkTele = "SELECT * from user WHERE nusnet = %s"
-        sqlFormula_insert = "INSERT INTO user (nusnet) VALUES (%s)"
-        data = (email.lower()[0:8], )
-        mycursor.execute(sqlFormula_checkTele, data)
-        myresult = mycursor.fetchone()
-        print(myresult)
-        if myresult != None:
-            mycursor.close()
-            return jsonify({"status": "success", "message": "You are now registered"})
-        else:
-            mycursor.execute(sqlFormula_insert, data)
-            mycursor.close()
-            db.commit()
-            return jsonify({"status": "success", "message": "You are now registered"})
-    return render_template("register.html")
-
-
-@app.route('/login', methods=["POST", "GET"])
-def login():
-    if request.method == "POST":
-        email = request.form['email'].lower()
-        print(email)
-        if check_email(email) == False:
-            return jsonify({"status" : "failure", "message" : "Invalid NUS email format"})
-        password = request.form['password']
-        sqlFormula = "SELECT * FROM user_website WHERE email = %s"
-        data = (email, )
-        mycursor = db.cursor()
-        mycursor.execute(sqlFormula, data)
-        myresult = mycursor.fetchall()
-        mycursor.close()
-        print(myresult)
-        if len(myresult) == 0:
-            return jsonify({"status" : "failure", "message" : "You have not registered"})
-        if bcrypt.checkpw(password.encode("utf-8"), myresult[0][1].encode("utf-8")):
-            session.clear()
-            session['email'] = email
-            return jsonify({"status" : "success", "message" : "You have logged in!"})
-
-        return jsonify({"status" : "failure", "message" : "Wrong password"}) 
-    if "email" in session:
-        return redirect("/main")
-    return render_template("login.html")
-
-
-@app.route("/send_otp_forgot", methods=["POST"])
-def send_otp_forgot():
-    email_receiver = request.form['email']
-    if check_email(email_receiver) == False:
-        return jsonify({"status" : "failure", "message" : "Invalid NUSNET email format"})
-    session["recoveryEmail"] = email_receiver
-    sqlFormula = "SELECT * FROM user_website WHERE email = %s"
-    data = (email_receiver, )
-    mycursor = db.cursor()
-    mycursor.execute(sqlFormula, data)
-    myresult = mycursor.fetchone()
-    mycursor.close()
-    if myresult == None:
-        return jsonify({"status" : "failure", "message" : "Not registered"})
-    email_sender = "chad.ionos2@gmail.com"
-    email_password = None
-    with open("includes\gmailPwd.txt") as f:
-        email_password = f.read().strip()
-    subject = "OTP"
-    otp = generate_otp()
-    body = "Your OTP is " + otp;
-    session["recoveryOtp"] = otp
-    em = EmailMessage()
-    em['From'] = email_sender
-    em['To'] = email_receiver
-    em['Subject'] = subject
-    em.set_content(body)
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(email_sender, email_password)
-        smtp.sendmail(email_sender, email_receiver, em.as_string())
-    return jsonify({"status" : "success", "message" : "sent"})
 
 @app.route("/send_otp_changepwd")
 def send_otp_changepwd():
@@ -319,13 +153,6 @@ def update_name():
         return jsonify({"status" : "success", "message" : "Name updated"})
     return jsonify({"status" : "failure", "message" : "Error in submission, try again"})
 
-#Room number validation
-def check_string_format(string):
-    pattern = r"^\d{2}-\d{2}[a-zA-Z]?$"
-    if re.match(pattern, string):
-        return True
-    else:
-        return False
 
 @app.route('/update_room', methods=["POST"])
 def update_room():

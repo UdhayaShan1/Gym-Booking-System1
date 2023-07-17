@@ -1,4 +1,4 @@
-name: Unit Tests Bot
+name: Unit Tests Website
 
 on: [push, pull_request]
 
@@ -16,5 +16,5 @@ jobs:
         python-version: 3.x
 
     - name: Run unit tests
-      run: python -m unittest botfunctions/functions_unittesting.py
-      working-directory: Telegram Bot
+      run: python -m unittest blueprints/functions_unittesting_website.py
+      working-directory: Website
