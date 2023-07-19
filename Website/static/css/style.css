@@ -87,3 +87,45 @@ body {
 .profileContainer button:hover {
   background-color: #864d5c;
 }
+
+.registrationPage {
+    position: relative;
+    top: 200px;
+    max-width: 300px;
+    margin: 0 auto;
+    padding: 25px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+}
+
+.registrationPage label {
+   font-size: 15px; 
+   font-weight: 450;  
+   margin-bottom: 10px;         
+}
+
+.registrationPage button {
+    font-size: 13px; 
+    padding: 10px 15px;
+    border: none;
+    background-color: #782646;
+    color: #f2f2f2;
+    cursor: pointer;
+    border-radius: 3px 
+}
+
+.registrationPage a {
+    font-size: 13px; 
+    font-weight: 400;
+    color: #525252;
+}
+
+.registrationPage input {
+    width: 100%;
+    padding: 5px 0px;
+    border-radius: 5px;
+    background: #f0f0f0;
+    border: 0;
+    margin-bottom: 10px;
+}
