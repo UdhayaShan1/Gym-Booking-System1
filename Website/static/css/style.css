@@ -3,6 +3,15 @@ body {
   background-color: #e2dad9;
 }
 
+footer {
+  background-color: #782646;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+  font-size: 14px;
+  margin-top: 50px;
+}
+
 /* Navbar */
 
 .navbar {
@@ -88,44 +97,114 @@ body {
   background-color: #864d5c;
 }
 
+/* Registration */
+
 .registrationPage {
-    position: relative;
-    top: 200px;
-    max-width: 300px;
-    margin: 0 auto;
-    padding: 25px;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+  position: relative;
+  top: 200px;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
 }
 
 .registrationPage label {
-   font-size: 15px; 
-   font-weight: 450;  
-   margin-bottom: 10px;         
+  font-size: 15px; 
+  font-weight: 450;  
+  margin-bottom: 10px;         
 }
 
 .registrationPage button {
-    font-size: 13px; 
-    padding: 10px 15px;
-    border: none;
-    background-color: #782646;
-    color: #f2f2f2;
-    cursor: pointer;
-    border-radius: 3px 
+  font-size: 13px; 
+  padding: 10px 15px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px 
+}
+
+.registrationPage button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.registrationPage button.active {
+  background-color: #864d5c;
+  color: white;
 }
 
 .registrationPage a {
-    font-size: 13px; 
-    font-weight: 400;
-    color: #525252;
+  font-size: 13px; 
+  font-weight: 400;
+  color: #525252;
 }
 
 .registrationPage input {
-    width: 100%;
-    padding: 5px 0px;
-    border-radius: 5px;
-    background: #f0f0f0;
-    border: 0;
-    margin-bottom: 10px;
+  width: 100%;
+  padding: 5px 0px;
+  border-radius: 5px;
+  background: #f0f0f0;
+  border: 0;
+  margin-bottom: 10px;
 }
+
+/* Login */
+
+.loginContainer {
+  position: relative;
+  top: 200px;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+}
+
+.loginContainer label {
+  font-size: 15px; 
+  font-weight: 450;  
+  margin-bottom: 10px;         
+}
+
+.loginContainer input {
+  width: 100%;
+  padding: 5px 0px;
+  border-radius: 5px;
+  background: #f0f0f0;
+  border: 0;
+  margin-bottom: 20px;
+}
+
+.loginContainer button {
+  font-size: 13px; 
+  padding: 10px 15px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px 
+}
+
+.loginContainer button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.loginContainer button.active {
+  background-color: #864d5c;
+  color: white;
+}
+
+#forgotPasswordButton {
+  margin-bottom: 10px; /* Adds spacing below the button */
+}
+
+#forgotPwdContainer label {
+  margin-right: 5px; /* Adds spacing to the right of the label */
+}
+
+/* Index */
