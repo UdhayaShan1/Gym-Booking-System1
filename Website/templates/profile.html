@@ -2,66 +2,21 @@
 <html>
 <head>
     <title>Profile Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-
-        p {
-            margin-top: 0;
-            margin-bottom: 20px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            font-weight: bold;
-        }
-
-        td#email {
-            font-style: italic;
-        }
-
-        button {
-            padding: 8px 16px;
-            border: none;
-            background-color: #007bff;
-            color: #fff;
-            cursor: pointer;
-            border-radius: 3px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 </head>
-<body>  
-    <div class="container">
+<body> 
+    <div class="navbar">
+        <a href="/main" id="homeButton">Home</a>
+        <a class="active" href="" id="profileButton">Profile</a>
+        <a href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div>
+    
+    <div class="profileContainer">
         <h1>User Profile</h1>
         <p>Please set your details here before booking!</p>
         <table>

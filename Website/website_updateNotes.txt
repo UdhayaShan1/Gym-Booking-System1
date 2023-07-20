@@ -54,3 +54,7 @@
 0.6.7
 1) Added unittesting
 2) Refactoring into blueprints WIP.
+
+0.6.8
+1) CSS changes to login, register, index.
+2) Organised js files into folders.

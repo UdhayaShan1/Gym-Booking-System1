@@ -5,12 +5,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="{{ url_for('static', filename='js/register.js') }}"></script>
+    <link rel="stylesheet" href="..\static\css\style.css">
+    <script src="{{ url_for('static', filename='js/auth/register.js') }}"></script>
 </head>
 <body>
-    <h1>Welcome to the register page!</h1>
-    <a href="/login">Registered alr? Login here</a><br>
-    <br>
+    <div class="registrationPage">
+    <h1>Welcome new user!</h1>
+
     <form id="registerForm">
         <label for "email">Email</label><br>
         <input type="text" id="email" name="email"><br>
@@ -21,10 +22,11 @@
         <input type="password" id="password" name="password"><br><br>
         <label for "confirmPassword">Confirm Password</label><br>
         <input type="password" id="confirmPass" name="confirmPass"><br>
-        <br>
         <button type=submit>Submit</button>   
     </form>
-    <p id="registerMessage">testOutput</p>
+    <br>
+    <a href="/login">Existing user? Login here</a>
+    </div>
 </body>
 
 </html>
