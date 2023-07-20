@@ -6,19 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script src="{{ url_for('static', filename='js/changePwd.js') }}"></script>
+    <link rel="stylesheet" href="..\static\css\style.css">
 </head>
 <body>
-    <h1>Change your password here!</h1>
-    <div class="recovery">
-        <form id="eminemRecovery">
-            <label for="otp">OTP:</label><br>
-            <input type="text" id="otp" name="otp"><br><br>
-            <label for="newPwd">New Password:</label><br>
-            <input type="password" id="newPwd" name="newPwd"><br><br>
-            <label for="newPwdCfm">Confirm Password:</label><br>
-            <input type="password" id="newPwdCfm" name="newPwdCfm"><br><br>
-            <button type="submit">Submit</button>
-        </form>
+    <div class="changePassword">
+        <h1>Change your password here!</h1>     <!-- Cemter align? -->
+        <div class="recovery">
+            <form id="eminemRecovery">
+                <label for="otp">OTP:</label><br>
+                <input type="text" id="otp" name="otp"><br>
+                <label for="newPwd">New Password:</label><br>
+                <input type="password" id="newPwd" name="newPwd"><br>
+                <label for="newPwdCfm">Confirm Password:</label><br>
+                <input type="password" id="newPwdCfm" name="newPwdCfm"><br><br>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
     </div>
     
 </body>
