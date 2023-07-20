@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="..\..\static\css\style.css">
     <style>
         /* CSS styles for the header */
         .report-header {
@@ -15,6 +16,17 @@
     <script src="{{ url_for('static', filename='js/report/viewreports.js') }}"></script>
 </head>
 <body>
+    <div class="navbar">
+        <h1 style="text-align: left;">Welcome!</h1>
+        <a href="" id="homeButton">Home</a>
+        <a href="" id="profileButton">Profile</a>
+        <a href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a class="active" href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div>
+
     <h1>Your reports at a glance</h1>
     <h2>Click the report id to view any responses to them by admins.</h2>
     <div id="reportContainer"></div>
