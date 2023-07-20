@@ -4,56 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            margin-top: 40px;
-            margin-bottom: 10px;
-        }
-
-        h3 {
-            margin-top: 10px;
-        }
-
-        .equipment-container {
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-bottom: 20px;
-        }
-
-        .equipment-name {
-            margin: 0;
-            font-size: 18px;
-        }
-
-        .equipment-info {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .equipment-status {
-            font-weight: bold;
-            color: red;
-        }
-
-        .equipment-comment {
-            margin-top: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="..\..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/equipment.js') }}"></script>
 </head>
 <body>
+    <div class="navbar">
+        <h1 style="text-align: left;">Welcome!</h1>
+        <a href="" id="homeButton">Home</a>
+        <a href="" id="profileButton">Profile</a>
+        <a href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a href="" id="reports">Manage Reports Here</a>
+        <a class="active" href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div>
+
     <h1>View Equipment Status Here!</h1>
-    <div id="equipment" class="equipment-container"></div>
+    <div class="equipmentContainer">
+        <div id="equipment1" class="equipment-container"></div>
+    </div>
 </body>
 </html>
