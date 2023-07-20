@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    var equipmentContainer = document.getElementById("equipment");
+    var equipmentContainer = document.getElementById("equipment1");
     let weightHeader = document.createElement("h2");
     weightHeader.textContent = "Weights";
     equipmentContainer.appendChild(weightHeader);

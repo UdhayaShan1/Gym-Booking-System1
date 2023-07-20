@@ -58,3 +58,6 @@
 0.6.8
 1) CSS changes to login, register, index.
 2) Organised js files into folders.
+
+0.6.9
+1) Updated equipment, change password CSS, profile.
