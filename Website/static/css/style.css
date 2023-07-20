@@ -20,7 +20,7 @@ footer {
 }
 
 .navbar h1 {
-  text-indent: 5px;
+  text-indent: 15px;
 
 }
 
@@ -48,10 +48,13 @@ footer {
 /* Profile */
 
 .profileContainer {
+  position: relative;
+  top: 100px;
   max-width: 600px;
   margin: 0 auto;
+  margin-top: 5%;
   padding: 20px;
-  background-color: #e2d9dd;
+  background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -112,7 +115,9 @@ footer {
 
 .registrationPage label {
   font-size: 15px; 
-  font-weight: 450;  
+  font-weight: 450; 
+  position: relative;
+  bottom: 3px;  
   margin-bottom: 10px;         
 }
 
@@ -166,7 +171,9 @@ footer {
 
 .loginContainer label {
   font-size: 15px; 
-  font-weight: 450;  
+  font-weight: 450;
+  position: relative;
+  bottom: 3px;   
   margin-bottom: 10px;         
 }
 
@@ -271,4 +278,98 @@ footer {
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
   
+}
+
+/* Change Password */
+
+.changePassword {
+  position: relative;
+  top: 200px;
+  max-width: 280px;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+}
+
+.changePassword label {
+  font-size: 15px; 
+  font-weight: 450; 
+  position: relative;
+  bottom: 3px; 
+  margin-bottom: 10px;         
+}
+
+.changePassword input {
+  width: 100%;
+  padding: 5px 0px;
+  border-radius: 5px;
+  background: #f0f0f0;
+  border: 0;
+  margin-bottom: 20px;
+}
+
+.changePassword button {
+  font-size: 13px; 
+  padding: 10px 15px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px; 
+}
+
+.changePassword button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.changePassword button.active {
+  background-color: #864d5c;
+  color: white;
+}
+
+/* Equipment */
+
+
+.equipmentContainer {
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  background-color: #fff;
+  max-width: 100%;
+  width: 65%;
+  margin-bottom: 20px;
+  margin: auto;
+}
+
+.equipment-container {
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  background-color: #e2dad9;
+  max-width: 100%;
+  width: 80%;
+  margin-bottom: 20px;
+  margin-right: 3px;
+}
+
+.equipment-name {
+  margin: 0;
+  font-size: 18px;
+}
+
+.equipment-info {
+  margin: 0;
+  font-size: 16px;
+}
+
+.equipment-status {
+  font-weight: bold;
+  color: red;
+}
+
+.equipment-comment {
+  margin-top: 5px;
 }
