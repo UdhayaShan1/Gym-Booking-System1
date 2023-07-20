@@ -391,7 +391,7 @@ footer {
 
 .reportContainer {
   position: relative;
-  top: 200px;
+  top: 125px;
   max-width: 100%;
   width: 60%;
   margin: 0 auto;
@@ -437,3 +437,11 @@ footer {
   cursor: pointer;
   border-radius: 3px; 
 }
+
+.reportContainer input[type=file] {
+  font-size: 13px; 
+  padding: 5px;
+  border: none;
+}
+
+/*   */
