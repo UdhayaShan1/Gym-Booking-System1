@@ -49,3 +49,12 @@
 0.6.6
 1) Added ability to view equipment status. Seprated into weights and others. Similar to Telegram Bot.
 2) Added some CSS with help of ChatGPT for visualisation. Will change later.
+
+
+0.6.7
+1) Added unittesting
+2) Refactoring into blueprints WIP.
+
+0.6.8
+1) CSS changes to login, register, index.
+2) Organised js files into folders.
