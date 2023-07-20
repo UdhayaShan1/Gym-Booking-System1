@@ -9,7 +9,7 @@ footer {
   text-align: center;
   padding: 20px;
   font-size: 14px;
-  margin-top: 50px;
+  margin-top: 45%;
 }
 
 /* Navbar */
@@ -186,7 +186,7 @@ footer {
   background-color: #782646;
   color: #f2f2f2;
   cursor: pointer;
-  border-radius: 3px 
+  border-radius: 3px; 
 }
 
 .loginContainer button:hover {
@@ -208,3 +208,67 @@ footer {
 }
 
 /* Index */
+
+.index h1 {
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+.index button {
+  font-size: 25px; 
+  font-family: Arial, sans-serif;
+  padding: 35px 55px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  display: block;
+  border-radius: 3px;
+  text-align: center;
+  margin: auto;
+  margin-top: 25%;
+
+  
+}
+
+.index button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.index button.active {
+  background-color: #864d5c;
+  color: white;
+}
+
+#indexRegistration {
+  display: inline-block;
+  position: absolute;
+  left: 25%;
+  top: 30%;
+  max-width: 300px;
+  width: 100%;
+  height: 300px;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+  text-align: center;
+}
+
+#indexLogin {
+  display: inline-block;
+  position: absolute;
+  top: 30%;
+  right: 25%;
+  max-width: 300px;
+  width: 100%;
+  height: 300px;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+  
+}

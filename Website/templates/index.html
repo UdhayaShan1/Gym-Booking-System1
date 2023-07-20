@@ -5,28 +5,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <link rel="stylesheet" href="..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/index.js') }}"></script>
-    <style>
-      /* Existing CSS styles */
-
-      /* Footer styles */
-      footer {
-          background-color: #333;
-          color: #fff;
-          text-align: center;
-          padding: 20px;
-          font-size: 14px;
-          margin-top: 50px;
-      }
-  </style>
   </head>
   <body>
     <h1>Welcome to FitBook Version 0.6.6 Alpha</h1>
-    <h1 id="LoginTitle">Login Here</h1>
-    <button type="button" id="loginButton">Click Me!</button>
-    <h1 id="RegisterTitle">Register Here</h1>
-    <button type="button" id="registerButton">Click Me!</button>
-    <footer>
+  <div class="index">
+    <span id="indexRegistration">
+      <h1 id="RegisterTitle">Are you a new User?</h1>
+      <button type="button" id="registerButton">Register</button>
+    </span>
+    
+    <span id="indexLogin">
+      <h1 id="LoginTitle">Are you an existing users?</h1>
+      <button type="button" id="loginButton">Login</button>
+    </span>
+  </div>
+  <br>
+    <footer class="footer">
       Created by Team Rolex &copy; 2023
   </footer>
   </body>
