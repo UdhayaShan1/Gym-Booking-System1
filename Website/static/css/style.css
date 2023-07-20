@@ -20,7 +20,7 @@ footer {
 }
 
 .navbar h1 {
-  text-indent: 5px;
+  text-indent: 15px;
 
 }
 
@@ -48,10 +48,12 @@ footer {
 /* Profile */
 
 .profileContainer {
+  position: relative;
+  top: 100px;
   max-width: 600px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #e2d9dd;
+  background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
