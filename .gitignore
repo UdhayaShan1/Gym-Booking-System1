@@ -2,3 +2,4 @@ includes/
 flask_session/
 backupapp.py
 Website/photos
+requirements.txt
