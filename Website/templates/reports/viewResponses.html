@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="..\..\static\css\style.css">
     <style>
         /* CSS styles for the response container */
         #responseContainer {
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: #fff;
             border-radius: 5px;
         }
 
@@ -22,6 +23,17 @@
     <script src="{{ url_for('static', filename='js/report/viewresponses.js') }}"></script>
 </head>
 <body>
+    <div class="navbar">
+        <h1 style="text-align: left;">Welcome!</h1>
+        <a href="" id="homeButton">Home</a>
+        <a href="" id="profileButton">Profile</a>
+        <a href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a class="active" href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div>
+
     <h1>View any responses to reports here!</h1>
     <div id="responseContainer"></div>
 </body>

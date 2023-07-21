@@ -4,23 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="..\..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/report/report.js') }}"></script>
 </head>
 <body>
-    <h1>Report Any Feedback Here!</h1>
-    <button id="viewReports">View your reports here!</button>
-    <br><br>
+    <div class="navbar">
+        <h1 style="text-align: left;">Welcome!</h1>
+        <a href="" id="homeButton">Home</a>
+        <a href="" id="profileButton">Profile</a>
+        <a href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a class="active" href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div>
+
+  <div class="reportingContainer">
+    <h1 style="margin-bottom: 10px;">Report Any Feedback Here!</h1>
+    <br>
     <form id="feedbackForm">
-        <label for="feedback">Feedback: </label>
-        <input type="text" id="feedback" name="feedback" required>
+        <label for="feedback">Feedback: </label><br>
+        <textarea id="feedback" name="feedback" rows="10" cols="110" required></textarea>
         <br><br>
         <label for="photo">Photo:</label>
         <input type="file" id="photo" name="photo" accept="image/*">
         <br><br>
         <input type="submit">
-    </form>
-    
-
-    
+    </form> <br>
+    <button id="viewReports">View your reports here!</button>
+  </div>
 </body>
 </html>
