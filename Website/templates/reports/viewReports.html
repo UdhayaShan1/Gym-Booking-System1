@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="..\..\static\css\style.css">
+    <link rel="icon" type="'image/x-icon" href="..\..\static\css\logo.ico">
     <style>
         /* CSS styles for the header */
         .report-header {
@@ -17,7 +18,7 @@
 </head>
 <body>
     <div class="navbar">
-        <h1 style="text-align: left;">Welcome!</h1>
+        <h1><span><img src="..\..\static\css\logo_navbar.png"></span>Welcome! <span id="email"></span></h1>
         <a href="" id="homeButton">Home</a>
         <a href="" id="profileButton">Profile</a>
         <a href="" id="bookingButton">Booking</a>
@@ -26,9 +27,14 @@
         <a href="" id="equipment">View Equipment Status</a>
         <a href="" id="logoutButton">Logout</a>
     </div>
-
-    <h1>Your reports at a glance</h1>
+    <br>
+    <button class="back-Button" id="backButton">Back</button>
+    <br>
+    <br>
+    <div>
+    <h1 style="margin-top: 30px;">Your reports at a glance</h1>
     <h2>Click the report id to view any responses to them by admins.</h2>
+    </div>
     <div id="reportContainer"></div>
 </body>
 </html>

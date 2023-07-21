@@ -7,10 +7,14 @@ footer {
   background-color: #782646;
   color: #fff;
   text-align: center;
+  position: absolute;
+  bottom: 0;
+  width: 90%;
   padding: 20px;
   font-size: 14px;
-  margin-top: 45%;
+  margin-top: 18%;
 }
+
 
 /* Navbar */
 
@@ -54,6 +58,20 @@ footer {
 .navbar a.active {
   background-color: #864d5c;
   color: white;
+}
+
+/* Main */
+
+.mainLogo {
+  width: 945px;
+  height: 708px;
+  display: block;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
 }
 
 /* Profile */
@@ -113,9 +131,21 @@ footer {
 
 /* Registration */
 
+.registerLogo {
+  width: 490px;
+  height: 368px;
+  display: block;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .registrationPage {
   position: relative;
-  top: 200px;
+  top: 280px;
   max-width: 300px;
   margin: 0 auto;
   padding: 25px;
@@ -169,11 +199,23 @@ footer {
 
 /* Login */
 
+.loginLogo {
+  width: 544px;
+  height: 409px;
+  display: block;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .loginContainer {
   position: relative;
-  top: 200px;
   max-width: 320px;
   margin: 0 auto;
+  top: 200px;
   padding: 25px;
   background-color: #fff;
   border-radius: 10px;
@@ -227,6 +269,20 @@ footer {
 
 /* Index */
 
+.indexLogo {
+  width: 680px;
+  height: 511px;
+
+
+  display: block;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .index h1 {
   text-align: center;
   font-family: Arial, sans-serif;
@@ -263,7 +319,7 @@ footer {
   display: inline-block;
   position: absolute;
   left: 25%;
-  top: 30%;
+  top: 40%;
   max-width: 300px;
   width: 100%;
   height: 300px;
@@ -278,7 +334,7 @@ footer {
 #indexLogin {
   display: inline-block;
   position: absolute;
-  top: 30%;
+  top: 40%;
   right: 25%;
   max-width: 300px;
   width: 100%;
@@ -293,9 +349,21 @@ footer {
 
 /* Change Password */
 
+.passLogo {
+  width: 490px;
+  height: 368px;
+  display: block;
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .changePassword {
   position: relative;
-  top: 200px;
+  top: 280px;
   max-width: 280px;
   margin: 0 auto;
   padding: 25px;

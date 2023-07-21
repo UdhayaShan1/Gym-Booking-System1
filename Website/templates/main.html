@@ -3,11 +3,12 @@
 <head>
     <title>Main Page</title>
     <link rel="stylesheet" href="..\static\css\style.css">
+    <link rel="icon" type="'image/x-icon" href="..\static\css\logo.ico">
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </head>
 <body>
     <div class="navbar">
-        <h1>Welcome! <span id="email"></span></h1>
+        <h1><span><img src="..\static\css\logo_navbar.png"></span>Welcome! <span id="email"></span></h1>
         <a class="active" href="" id="homeButton">Home</a>
         <a href="" id="profileButton">Profile</a>
         <a href="" id="bookingButton">Booking</a>
@@ -18,7 +19,7 @@
     </div>
     
     <div class="container">
-        <h1>Welcome to FitBook</h1>
+        <img class="mainLogo" src="..\static\css\logo_no_bg.png">
         <h2 id="profileDirector"></h2>
     </div>
 </body>

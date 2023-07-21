@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="..\..\static\css\style.css">
+    <link rel="icon" type="'image/x-icon" href="..\..\static\css\logo.ico">
     <script src="{{ url_for('static', filename='js/booking/booking_times.js') }}"></script>
     <style>
         
@@ -14,14 +15,17 @@
             margin-bottom: 20px;
         } 
         
-        #buttonContainer {
+        .timeContainer {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(9, minmax(200px, 1fr));
             gap: 20px;
+            grid-row-gap: 30px;
             justify-items: center;
+            margin: auto;
+
         }
         
-        .available {
+        .timeContainer button.available {
             padding: 20px;
             background-color: #fff;
             color: black;
@@ -33,12 +37,12 @@
             transition: background-color 0.3s ease;
         }
         
-        .booked {
+        .timeContainer button.booked {
             padding: 20px;
-            background-color: #ddd;
+            background-color: #915967;
             opacity: 0.7;
             cursor: not-allowed;
-            color: black;
+            color: white;
             border: none;
             border-radius: 5px;
             font-size: 20px;
@@ -47,12 +51,12 @@
             transition: background-color 0.3s ease;
         }
 
-        .available:hover {
+        .timeContainer button.available:hover {
             background-color: #782646;
             color: #fff;
         }
 
-        .available.active {
+        .timeContainer button.available.active {
             background-color: #864d5c;
             color: white;
         }
@@ -61,7 +65,7 @@
 </head>
 <body>
     <div class="navbar">
-        <h1 style="text-align: left;">Welcome!</h1>
+        <h1><span><img src="..\..\static\css\logo_navbar.png"></span>Welcome! <span id="email"></span></h1>
         <a href="" id="homeButton">Home</a>
         <a href="" id="profileButton">Profile</a>
         <a class="active" href="" id="bookingButton">Booking</a>
@@ -74,6 +78,8 @@
     <h1>
         <button class="back-Button" id="backButton">Back</button>
     </h1>
+    <br>
+    <br>
     <div id="timeContainer"></div>
     
 </body>
