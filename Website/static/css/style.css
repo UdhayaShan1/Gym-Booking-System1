@@ -410,8 +410,8 @@ footer {
 }
 
 .reportingContainer textarea {
-  padding: 5px 0px;
-  font-size: 16px;
+  padding: 5px 5px;
+  font:15px Arial, cursive;
   border-radius: 5px;
   background: #f0f0f0;
   border: 0;
@@ -458,8 +458,6 @@ footer {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
 }
 
-
-
 /* View Responses */
 
 .responseContainer {
@@ -473,7 +471,6 @@ footer {
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
 }
-
 
 /* Booking */
 
