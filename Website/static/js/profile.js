@@ -304,6 +304,7 @@ document.addEventListener("DOMContentLoaded", function() {
     //Nav-Bar Buttons
     var bookingButton = document.getElementById("bookingButton");
     bookingButton.addEventListener("click", function(event) {
+        event.preventDefault();
         fetch("/profile_completed")
         .then(response => response.json())
         .then(data => 
