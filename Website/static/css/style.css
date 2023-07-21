@@ -21,9 +21,18 @@ footer {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.navbar img {
+  width: 55px;
+  height: 52px;
+  position: relative;
+  top: 10px;
+  margin-right: 10px;
+}
+
 .navbar h1 {
   text-indent: 15px;
-
+   color: white;
+   text-align: left;
 }
 
 .navbar a {
