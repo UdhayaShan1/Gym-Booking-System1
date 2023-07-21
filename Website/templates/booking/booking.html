@@ -5,15 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="..\..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/booking/booking.js') }}"></script>
     <style>
-        body {
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        
+
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -28,32 +24,49 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 10px; /* Adjust the horizontal spacing between buttons */
-            grid-row-gap: 50px; /* Adjust the vertical spacing between columns */
+            grid-row-gap: 30px; /* Adjust the vertical spacing between columns */
             justify-items: center;
             margin-top: 20px;
         }
         
         .dateButton {
             padding: 10px 20px;
-            background-color: #fff;
+            background-color: #782646;
+            color: #f2f2f2;
             border: none;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 20px;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             transition: background-color 0.3s ease;
         }
         
         .dateButton:hover {
-            background-color: #f0f0f0;
+            background-color: #ddd;
+            color: black;
         }
+
+        .dateButton.active {
+            background-color: #864d5c;
+            color: white;
+}
 
     </style>
 </head>
 <body>
-    <button id="backButton"">Back</button>
-    <button id="logout">Logout</button>
-    <h1>Welcome to the booking page! Click any date to begin!</h1>
+    <div class="navbar">
+        <h1 style="text-align: left;">Welcome!</h1>
+        <a href="" id="homeButton">Home</a>
+        <a href="" id="profileButton">Profile</a>
+        <a class="active" href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div> <br>
+
+    <button class="back-Button" id="backButton">Back</button>
+    <h1 style="text-align: center;margin-bottom: 20px;">Click any date to begin!</h1>
     <div id="buttonContainer" class="buttonContainerClass"></div>
     
 </body>

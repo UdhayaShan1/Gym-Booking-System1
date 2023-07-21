@@ -5,19 +5,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="..\..\static\css\style.css">
     <script src="{{ url_for('static', filename='js/booking/booking_times.js') }}"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f0f0;
-        }
         
         h1 {
             text-align: center;
             margin-bottom: 20px;
-        }
+        } 
         
         #buttonContainer {
             display: grid;
@@ -28,8 +23,8 @@
         
         .available {
             padding: 20px;
-            background-color: #4CAF50;
-            color: #fff;
+            background-color: #fff;
+            color: black;
             border: none;
             border-radius: 5px;
             font-size: 20px;
@@ -40,10 +35,10 @@
         
         .booked {
             padding: 20px;
-            background-color: #FF5722;
+            background-color: #ddd;
             opacity: 0.7;
             cursor: not-allowed;
-            color: #fff;
+            color: black;
             border: none;
             border-radius: 5px;
             font-size: 20px;
@@ -51,30 +46,33 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease;
         }
-        
-        #backButton,
-        #logout {
-            background-color: #2196F3;
+
+        .available:hover {
+            background-color: #782646;
             color: #fff;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s ease;
+        }
+
+        .available.active {
+            background-color: #864d5c;
+            color: white;
         }
         
-        #backButton:hover,
-        #logout:hover {
-            background-color: #1976D2;
-        }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <h1 style="text-align: left;">Welcome!</h1>
+        <a href="" id="homeButton">Home</a>
+        <a href="" id="profileButton">Profile</a>
+        <a class="active" href="" id="bookingButton">Booking</a>
+        <a href="" id="editBookingButton">View and Edit Bookings</a>
+        <a href="" id="reports">Manage Reports Here</a>
+        <a href="" id="equipment">View Equipment Status</a>
+        <a href="" id="logoutButton">Logout</a>
+    </div>
+
     <h1>
-        <button id="backButton">Back</button>
-        <button id="logout">Logout</button>
+        <button class="back-Button" id="backButton">Back</button>
     </h1>
     <div id="timeContainer"></div>
     
