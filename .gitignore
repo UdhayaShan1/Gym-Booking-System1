@@ -1,5 +1,5 @@
 includes/
 flask_session/
 backupapp.py
-Website/databaseconn.py
 Website/photos
+requirements.txt

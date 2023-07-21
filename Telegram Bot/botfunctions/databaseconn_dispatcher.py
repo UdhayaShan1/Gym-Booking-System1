@@ -31,10 +31,11 @@ pwd = None
 with open("includes\database_pwd.txt") as f:
     pwd = f.read().strip()
 db = mysql.connector.connect(
-    host="localhost",
-    user='root',
+    host="sql6.freemysqlhosting.net",
+    user='sql6634220',
     passwd=pwd,
-    database="testdatabase"
+    database="sql6634220",
+    connect_timeout=30
 )
 
 # Set up dispatcher
