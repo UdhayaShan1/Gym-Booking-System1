@@ -332,7 +332,6 @@ footer {
 
 /* Equipment */
 
-
 .equipmentContainer {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -343,6 +342,20 @@ footer {
   margin-bottom: 20px;
   margin: auto;
 }
+
+.equipmentContainer h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  }
+
+.equipmentContainer h2 {
+  margin-top: 40px;
+  margin-bottom: 10px;
+  }
+
+.equipmentContainer h3 {
+  margin-top: 10px;
+  }
 
 .equipment-container {
   border-radius: 5px;
@@ -373,3 +386,92 @@ footer {
 .equipment-comment {
   margin-top: 5px;
 }
+
+/* Report */
+
+.reportingContainer {
+  position: relative;
+  top: 100px;
+  max-width: 100%;
+  width: 60%;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+.reportingContainer label {
+  font-size: 17px; 
+  font-weight: 450;
+  position: relative;
+  bottom: 3px;   
+  margin-bottom: 10px;         
+}
+
+.reportingContainer textarea {
+  padding: 5px 5px;
+  font:15px Arial, cursive;
+  border-radius: 5px;
+  background: #f0f0f0;
+  border: 0;
+  margin-bottom: 10px;
+}
+
+.reportingContainer button {
+  font-size: 13px; 
+  padding: 10px 15px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px; 
+}
+
+.reportingContainer input[type=submit] {
+  font-size: 13px; 
+  padding: 10px 15px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px; 
+}
+
+.reportingContainer input[type=file] {
+  font-size: 13px; 
+  padding: 5px;
+  border: none;
+}
+
+/* View Report */
+
+.reportContainer {
+  position: relative;
+  top: 50px;
+  max-width: 100%;
+  width: 70%;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+/* View Responses */
+
+.responseContainer {
+  position: relative;
+  top: 50px;
+  max-width: 100%;
+  width: 70%;
+  margin: 0 auto;
+  padding: 25px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+/* Booking */
+
+
