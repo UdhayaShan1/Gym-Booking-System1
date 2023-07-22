@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function() {
-    var emailCell = document.getElementById("email");
+    var emailCell = document.getElementById("email1");
     var nameCell = document.getElementById("name");
     var roomCell = document.getElementById("room");
     var spotterNameCell = document.getElementById("spotterName");

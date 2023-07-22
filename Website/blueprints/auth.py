@@ -38,8 +38,8 @@ def send_otp():
     if myresult != None:
         return jsonify({"status" : "failure", "message" : "Already registered"})
 
-    if check(email_receiver) == False:
-        return jsonify({"status" : "failure", "message" : "Invalid email format, use XXX email only"})
+    if check_email(email_receiver) == False:
+        return jsonify({"status" : "failure", "message" : "Invalid email format, use NUSNET email only"})
     email_sender = "chad.ionos2@gmail.com"
     email_password = None
     with open("includes\gmailPwd.txt") as f:
