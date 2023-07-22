@@ -267,13 +267,11 @@ footer {
   margin-right: 5px; /* Adds spacing to the right of the label */
 }
 
-/* Index */
+/* Index  */
 
 .indexLogo {
   width: 680px;
   height: 511px;
-
-
   display: block;
   position: absolute;
   margin-left: auto;
@@ -525,6 +523,13 @@ footer {
 
 /* View Report */
 
+/* CSS styles for the header */
+.report-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
 .reportContainer {
   position: relative;
   top: 50px;
@@ -549,6 +554,19 @@ footer {
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+}
+
+#responseContainer {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 5px;
+}
+
+/* CSS styles for the response headers */
+.response-header {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
 }
 
 /* Booking */
