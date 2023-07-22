@@ -200,8 +200,8 @@ footer {
 /* Login */
 
 .loginLogo {
-  width: 544px;
-  height: 409px;
+  width: 490px;
+  height: 368px;
   display: block;
   position: absolute;
   margin-left: auto;
@@ -215,7 +215,7 @@ footer {
   position: relative;
   max-width: 320px;
   margin: 0 auto;
-  top: 200px;
+  top: 275px;
   padding: 25px;
   background-color: #fff;
   border-radius: 10px;
