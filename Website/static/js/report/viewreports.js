@@ -1,4 +1,12 @@
 document.addEventListener("DOMContentLoaded", function() {
+    let backButton = document.getElementById("backButton");
+    backButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/report";
+    })
+
+
+
     let reportContainer = document.getElementById("reportContainer");
     fetch("/fetchreports", {
         method: "POST"

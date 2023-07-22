@@ -1,5 +1,10 @@
 document.addEventListener("DOMContentLoaded", function() {
     let responseContainer = document.getElementById("responseContainer");
+    let backButton = document.getElementById("backButton");
+    backButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        window.location.href = "/viewreports";
+    })
 
     fetch("/fetchresponses", {
         method: "POST"
