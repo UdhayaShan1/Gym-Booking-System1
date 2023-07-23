@@ -595,3 +595,67 @@ footer {
   background-color: #864d5c;
   color: white;
 }
+
+/* Booking Times */
+
+.timeContainer {
+  display: grid;
+  grid-template-columns: repeat(9, minmax(200px, 1fr));
+  gap: 20px;
+  grid-row-gap: 30px;
+  justify-items: center;
+  margin: auto;
+
+}
+
+.timeContainer button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+  margin-right: 15px;
+  margin-bottom: 10px;
+}
+
+.available {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+  background-color: #fff;
+  color: black;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+  margin-right: 15px;
+  margin-bottom: 10px;
+}
+
+
+.booked {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+  background-color: #915967;
+  opacity: 0.7;
+  cursor: not-allowed;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+  margin-right: 10px;
+}
+
+.available:hover {
+  background-color: #782646;
+  color: #fff;
+}
+
+.available.active {
+  background-color: #864d5c;
+  color: white;
+}
