@@ -1,18 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitBook Login</title><br>
-        <input type="password" id="password" name="password"><br>
-        <button type="submit">Login</button><br>
-      </form>
-      <br>
-      <button id="forgotPasswordButton">Forgot Password?</button>
-      <br>
-      <div id="forgotPwdContainer"></div>
-    </div>
-    
-</body>
-</html>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FitBook Login</title>
+<script src="{{ url_for('static', filename='js/auth/login.js') }}"></script>
+<link rel="stylesheet" href="..\static\css\style.css">
+<link rel="icon" type="'image/x-icon" href="..\static\css\logo.ico">
+</head>
+<body>
+<img class="loginLogo" src="..\static\css\logo_no_bg.png">
+<div class="loginContainer">
+  <h1>Welcome back user!</h1>
+  <form id="loginForm">
+    <label for="email">Email</label><br>
+    <input type="text" id="email" name="email"><br>
+    <label for="password">Password</label><br>
+
+    <input type="password" id="password" name="password"><br>
+    <button type="submit">Login</button><br>
+  </form>
