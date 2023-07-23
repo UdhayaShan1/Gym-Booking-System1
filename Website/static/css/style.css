@@ -62,16 +62,28 @@ footer {
 
 /* Main */
 
-.mainLogo {
-  width: 945px;
-  height: 708px;
-  display: block;
-  position: absolute;
-  margin-left: auto;
-  margin-right: auto;
-  left: 0;
-  right: 0;
+.mainContainer {
   text-align: center;
+  max-width: 800px; /* Set the maximum width of the video container */
+  margin: 0 auto; /* Center the container horizontally */
+}
+
+.mainContainer iframe {
+  width: 100%;
+  height: 500px;
+}
+
+.telegram-text {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.telegram-logo {
+  width: 50px; 
+  height: auto;
+  margin-right: 10px; 
 }
 
 /* Profile */
@@ -594,4 +606,54 @@ footer {
 .back-Button.active {
   background-color: #864d5c;
   color: white;
+}
+
+.buttonContainerClass {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px; /* Adjust the horizontal spacing between buttons */
+  grid-row-gap: 30px; /* Adjust the vertical spacing between columns */
+  justify-items: center;
+  margin-top: 20px;
+}
+
+.buttonContainerClass button {
+  padding: 10px 20px;
+  background-color: #782646;
+  color: #f2f2f2;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.buttonContainerClass button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.buttonContainerClass button.active {
+  background-color: #864d5c;
+  color: white;
+}
+
+#buttonContainer {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px; /* Adjust the horizontal spacing between buttons */
+  grid-row-gap: 30px; /* Adjust the vertical spacing between columns */
+  justify-items: center;
+  margin-top: 20px;
+}
+
+#buttonContainer button {
+  font-size: 15px; 
+  padding: 12px 17px;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px;
 }
