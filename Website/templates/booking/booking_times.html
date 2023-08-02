@@ -9,59 +9,11 @@
     <link rel="icon" type="'image/x-icon" href="..\..\static\css\logo.ico">
     <script src="{{ url_for('static', filename='js/booking/booking_times.js') }}"></script>
     <script src="{{ url_for('static', filename='js/navbar.js') }}"></script>
-    <style>
-        
+    <style> 
         h1 {
             text-align: center;
             margin-bottom: 20px;
         } 
-        
-        .timeContainer {
-            display: grid;
-            grid-template-columns: repeat(9, minmax(200px, 1fr));
-            gap: 20px;
-            grid-row-gap: 30px;
-            justify-items: center;
-            margin: auto;
-
-        }
-        
-        .timeContainer button.available {
-            padding: 20px;
-            background-color: #fff;
-            color: black;
-            border: none;
-            border-radius: 5px;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s ease;
-        }
-        
-        .timeContainer button.booked {
-            padding: 20px;
-            background-color: #915967;
-            opacity: 0.7;
-            cursor: not-allowed;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 20px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s ease;
-        }
-
-        .timeContainer button.available:hover {
-            background-color: #782646;
-            color: #fff;
-        }
-
-        .timeContainer button.available.active {
-            background-color: #864d5c;
-            color: white;
-        }
-        
     </style>
 </head>
 <body>
