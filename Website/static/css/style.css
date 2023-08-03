@@ -500,6 +500,8 @@ footer {
 
 .reportingContainer textarea {
   padding: 5px 5px;
+  display: block;
+  width: 95%;
   font:15px Arial, cursive;
   border-radius: 5px;
   background: #f0f0f0;
