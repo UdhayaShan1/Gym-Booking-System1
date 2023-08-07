@@ -34,9 +34,8 @@ SERVICE_ACCOUNT_FILE = 'includes/service_account.json'
 PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 #Import database and dispatcher from package
-from botfunctions.databaseconn_dispatcher import db, dp
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
-mycursor = db.cursor()
 
 
 logging.basicConfig(level=logging.INFO)
@@ -165,7 +164,7 @@ async def exit(message: types.Message, state: FSMContext):
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
-    mycursor = db.cursor()
+    mycursor = create_connection().cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     mycursor.close()
@@ -290,6 +289,8 @@ dp.register_callback_query_handler(viewResponseHandler, state=viewReport.clicked
 @dp.message_handler(commands=["equipment"])
 async def equipmentCheck(message: types.Message, state: FSMContext):
     sqlFormulaWeights = "SELECT * FROM equipment WHERE weight IS NOT NULL"
+    connection = create_connection().create_connection();
+    mycursor = connection.cursor()
     mycursor.execute(sqlFormulaWeights)
     myresult = mycursor.fetchall()
     dict_weight = {}

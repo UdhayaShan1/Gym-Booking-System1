@@ -33,8 +33,7 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
-mycursor = db.cursor()
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
 
 logging.basicConfig(level=logging.INFO)
@@ -43,6 +42,7 @@ logging.basicConfig(level=logging.INFO)
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
@@ -135,6 +135,8 @@ async def unBook(message: types.Message, state: FSMContext):
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
     data = (message.from_user.id, nusnetRetriever(
         message.from_user.id), str(curr_date), str(curr_time), )
+    db = create_connection()
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     res = []
@@ -169,6 +171,8 @@ async def unBookCycle(message: types.Message, state: FSMContext, id):
     curr_time = datetime.now().strftime("%H:%M:%S")
     sqlFormula = "SELECT * FROM booking_slots WHERE is_booked = 1 AND (assoc_teleId = %s OR assoc_nusnet = %s) AND date = %s AND timeslot > %s"
     data = (id, nusnetRetriever(id), str(curr_date), str(curr_time), )
+    db = create_connection()
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     res = []
@@ -197,6 +201,8 @@ async def unBookCycle(message: types.Message, state: FSMContext, id):
         await state.set_state(Book.picked_unbook_date)
 
 async def unBookHandler(call: types.CallbackQuery, state: FSMContext):
+    db = create_connection()
+    mycursor = db.cursor()
     date = str(call.data.split()[0])
     time = str(call.data.split()[1])
     sqlFormula = "UPDATE booking_slots SET is_booked = 0, assoc_teleId = %s, assoc_nusnet = %s WHERE date = %s AND timeslot = %s AND (assoc_teleId = %s OR assoc_nusnet = %s)"

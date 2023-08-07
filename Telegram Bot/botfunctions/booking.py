@@ -33,8 +33,8 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
-mycursor = db.cursor()
+from botfunctions.databaseconn_dispatcher import create_connection, dp
+#mycursor = db.cursor()
 
 
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +43,8 @@ logging.basicConfig(level=logging.INFO)
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
-    mycursor = db.cursor()
+    connection = create_connection()
+    mycursor = connection.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     mycursor.close()
@@ -173,9 +174,11 @@ async def book(message: types.Message, state: FSMContext):
     - message: The message object representing the user's message.
     - state: The FSMContext object for managing the conversation state.
     """
+    connection = create_connection();
+    mycursor = connection.cursor()
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
-    mycursor = db.cursor()
+    mycursor = connection.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     if myresult != None and myresult[-1] == 0:
@@ -223,7 +226,8 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
     # Check if user is in the system in the first place
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
-    mycursor = db.cursor()
+    connection = create_connection()
+    mycursor = connection.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     if myresult == None:
@@ -295,7 +299,8 @@ async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
     - state: The FSMContext object for managing the conversation state.
     """
     # await call.message.answer(call.data)
-    mycursor = db.cursor()
+    connection = create_connection()
+    mycursor = connection.cursor()
     booking_obj = bookings[call.from_user.id]
     booking_obj.date = str(call.data)[5:]
     now = datetime.now()
@@ -368,6 +373,8 @@ async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
 
 
 async def bookStageViewSlotsCycle(message: types.Message, state: FSMContext, id):
+    connection = create_connection();
+    mycursor = connection.cursor()
     # await message.reply(message.text)
     # print((bookings.keys()))
     booking_obj = bookings[id]
@@ -472,6 +479,8 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state: FSMContext):
     It then asks the user if they want to book additional slots for the same day. 
     The user can choose to either book more slots by selecting 'Yes' or finish the booking process by selecting 'No'.
     """
+    connection = create_connection();
+    mycursor = connection.cursor()
     if call.data == "Pick another date":
         await bookCycle(call.message, state, call.from_user.id)
     else:
@@ -487,7 +496,7 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state: FSMContext):
             data = (call.from_user.id, nusnetRetriever(
                 call.from_user.id), str(call.data)[5:], booking_obj.date, )
             mycursor.execute(sqlFormula, data)
-            db.commit()
+            connection.commit()
             await call.message.answer("Okay booked at " + booking_obj.date + " " + booking_obj.time + "\nEnjoy your workout!")
 
             if myresult == None or len(myresult) < 2:
@@ -546,6 +555,8 @@ async def checkMyGymSlots(message: types.Message):
     2023-05-19 on 10:30 👌
     """
     sqlFormula = "SELECT * FROM user where teleId = %s"
+    connection = create_connection();
+    mycursor = connection.cursor()
     mycursor.execute(sqlFormula, (message.from_user.id, ))
     myresult = mycursor.fetchall()
     if len(myresult) == 0:
