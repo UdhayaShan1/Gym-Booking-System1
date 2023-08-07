@@ -33,7 +33,7 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
 logging.basicConfig(level=logging.INFO)
 
@@ -148,6 +148,7 @@ async def chg_nameHandler(message: types.Message, state: FSMContext):
     """
     sqlFormula = "UPDATE user SET name = %s WHERE teleId = %s"
     data = (message.text, message.from_id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     db.commit()
@@ -184,6 +185,7 @@ async def chg_roomHandler(message: types.Message, state: FSMContext):
     if check_room_format(s):
         sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
         data = (s, message.from_id, )
+        db = create_connection()
         mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         mycursor.close()
@@ -220,6 +222,7 @@ async def chg_nameHandler1(message: types.Message, state: FSMContext):
     """
     sqlFormula = "UPDATE user SET spotterName = %s WHERE teleId = %s"
     data = (message.text, message.from_id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     mycursor.close()
@@ -256,6 +259,7 @@ async def chg_roomHandler1(message: types.Message, state: FSMContext):
     if check_room_format(s):
         sqlFormula = "UPDATE user SET spotterRoomNo = %s WHERE teleId = %s"
         data = (s, message.from_id, )
+        db = create_connection()
         mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         mycursor.close()

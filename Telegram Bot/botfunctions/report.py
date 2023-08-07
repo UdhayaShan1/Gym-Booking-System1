@@ -33,8 +33,7 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
-mycursor = db.cursor()
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
 
 logging.basicConfig(level=logging.INFO)
@@ -43,6 +42,7 @@ logging.basicConfig(level=logging.INFO)
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
@@ -151,6 +151,8 @@ def upload_photo(file_path, id):
 async def report(message: types.Message, state: FSMContext):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
+    db = create_connection()
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     if len(myresult) == 0:
@@ -167,6 +169,8 @@ async def feedbackHandler(message: types.Message, state: FSMContext):
     sqlFormula = "INSERT INTO reports (report, teleId, nusnet) VALUES (%s, %s, %s)"
     data = (message.text, message.from_user.id,
             nusnetRetriever(message.from_user.id))
+    db = create_connection()
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     db.commit()
     responses = ["Yes", "No"]
@@ -189,6 +193,8 @@ async def photoReponseHandler(call: types.CallbackQuery, state: FSMContext):
 # Helper function to retrieve reportid for tagging of photos to match the report in db
 def reportIdRetriever(id):
     sqlFormula = "SELECT * FROM reports WHERE teleId = %s"
+    db = create_connection()
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, (id, ))
     myresult = mycursor.fetchall()
     return myresult[-1][-1]
@@ -227,6 +233,8 @@ async def photoSubmissionHandler(message: types.Message, state: FSMContext):
 async def viewResponses(message: types.Message, state: FSMContext):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
+    db = create_connection()
+    mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchall()
     if len(myresult) == 0:
@@ -268,6 +276,8 @@ async def viewResponseHandler(call: types.CallbackQuery, state: FSMContext):
     else:
         sqlFormula = "SELECT * FROM reports_response WHERE reportId = %s"
         data = (int(call.data), )
+        db = create_connection()
+        mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         myresult = mycursor.fetchall()
         str1 = "Responses to report ID: " + call.data + "\n\n"

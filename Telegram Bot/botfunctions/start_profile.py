@@ -33,7 +33,7 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
 
 logging.basicConfig(level=logging.INFO)
@@ -166,6 +166,7 @@ async def set_nusnet(message: types.Message, state: FSMContext):
     user = users[message.from_user.id]
     # user = users[message.from_user.id]
     nusnet = str(message.text).lower()
+    db = create_connection()
     mycursor = db.cursor()
     if validnusNet(nusnet) == False:
         await message.reply("Please type valid NUSNET id!")
@@ -266,6 +267,7 @@ async def set_spotter_name(message: types.Message, state: FSMContext):
     await state.set_state(Form.set_spotter_room)
 
 async def set_spotter_room(message: types.Message, state: FSMContext):
+    db = create_connection()
     mycursor = db.cursor()
     """
     Handler for setting the spotter's room number during the registration process.
@@ -320,6 +322,7 @@ async def myinfo(message: types.Message):
     """
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()

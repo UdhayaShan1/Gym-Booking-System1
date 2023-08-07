@@ -34,7 +34,7 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
 
 logging.basicConfig(level=logging.INFO)
@@ -134,6 +134,7 @@ async def verify(message: types.Message, state: FSMContext):
     print(message.from_user.id)
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
@@ -157,6 +158,7 @@ async def verify(message: types.Message, state: FSMContext):
 
 async def otp_handler(message: types.Message, state: FSMContext):
     # print(users)
+    db = create_connection()
     mycursor = db.cursor()
     otp_given = message.text
     user = users[message.from_user.id]
@@ -189,6 +191,7 @@ async def deleteMyDetails(message: types.Message, state: FSMContext):
     button2 = KeyboardButton('No!')
     keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(button1).add(button2)
     """
+    db = create_connection()
     mycursor = db.cursor()
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
@@ -209,6 +212,7 @@ async def deleteMyDetails(message: types.Message, state: FSMContext):
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
@@ -227,6 +231,7 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
         call (types.CallbackQuery): The incoming callback query object.
         state (FSMContext): The state object for managing conversation state.
     """
+    db = create_connection()
     mycursor = db.cursor()
     if call.data == "Yes!":
         nusnet = nusnetRetriever(call.from_user.id)
