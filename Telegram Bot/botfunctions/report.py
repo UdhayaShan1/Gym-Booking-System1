@@ -162,6 +162,7 @@ async def report(message: types.Message, state: FSMContext):
         reportObj = Report(message.from_user.id)
         reports[message.from_user.id] = reportObj
         await state.set_state(Reporting.await_feedback)
+    db.close()
 
 async def feedbackHandler(message: types.Message, state: FSMContext):
     reportObj = reports[message.from_user.id]
@@ -181,6 +182,7 @@ async def feedbackHandler(message: types.Message, state: FSMContext):
     keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
     await message.reply("Do you wish to submit a photo as well?", reply_markup=keyboard)
     await state.set_state(Reporting.await_photo_response)
+    db.close()
 
 async def photoReponseHandler(call: types.CallbackQuery, state: FSMContext):
     if call.data == "Yes":
@@ -197,6 +199,7 @@ def reportIdRetriever(id):
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, (id, ))
     myresult = mycursor.fetchall()
+    db.close()
     return myresult[-1][-1]
 
 async def photoSubmissionHandler(message: types.Message, state: FSMContext):
@@ -268,6 +271,7 @@ async def viewResponses(message: types.Message, state: FSMContext):
             keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
             await message.reply(str1, reply_markup=keyboard)
             await state.set_state(viewReport.clicked_id)
+    db.close()
 
 async def viewResponseHandler(call: types.CallbackQuery, state: FSMContext):
     if call.data == "Exit":
@@ -285,3 +289,4 @@ async def viewResponseHandler(call: types.CallbackQuery, state: FSMContext):
             str1 += i[-1] + "\n\n"
         await call.message.answer(str1)
         await state.finish()
+        db.close()

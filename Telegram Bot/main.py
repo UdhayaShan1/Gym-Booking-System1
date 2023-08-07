@@ -323,6 +323,7 @@ async def equipmentCheck(message: types.Message, state: FSMContext):
             str1 += "Working Condition\n\n"
         else:
             str1 += "Not usable 😔\n" + "Comments: " + i[4] + "\n\n"
+    connection.close()
     await message.reply(str1, parse_mode="HTML") 
 
 # Leave this at bottom to catch unknown commands or text input by users

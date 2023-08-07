@@ -48,6 +48,7 @@ def nusnetRetriever(id):
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     mycursor.close()
+    connection.close()
     return myresult[-2]
 
 
@@ -211,6 +212,7 @@ async def book(message: types.Message, state: FSMContext):
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
     mycursor.close()
+    connection.close()
 
 async def bookCycle(message: types.Message, state: FSMContext, id):
     await message.reply(bookings)
@@ -255,6 +257,7 @@ async def bookCycle(message: types.Message, state: FSMContext, id):
         await message.reply("Select date", reply_markup=calendar_keyboard)
         await state.set_state(Book.picked_date)
     mycursor.close()
+    connection.close()
 
 
 async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
@@ -369,6 +372,7 @@ async def bookStageViewSlots(call: types.CallbackQuery, state: FSMContext):
                 await call.message.answer(str1, reply_markup=calendar_keyboard)
                 await state.set_state(Book.picked_time)
     mycursor.close()
+    connection.close()
 # This function must be explicitly called if and only if user asks to book agn for same day
 
 
@@ -443,6 +447,7 @@ async def bookStageViewSlotsCycle(message: types.Message, state: FSMContext, id)
                     row_width=2).add(*buttons).add(button1)
                 await message.reply(str1, reply_markup=calendar_keyboard)
                 await state.set_state(Book.picked_time)
+    connection.close()
 
 async def bookStageSelectedTime(call: types.CallbackQuery, state: FSMContext):
     """
@@ -513,6 +518,7 @@ async def bookStageSelectedTime(call: types.CallbackQuery, state: FSMContext):
         else:
             await call.message.answer("Sorry you have booked the maximum number of slots for yourself that day")
             await state.finish()
+    connection.close()
 
 async def responseHandlerforAdditionalSlots(call: types.CallbackQuery, state: FSMContext):
     """
@@ -587,3 +593,4 @@ async def checkMyGymSlots(message: types.Message):
                 str1 += str(i[1]) + " on " + str(i[2])[:-3] + " 👌\n\n"
                 # await message.reply("Slot booked on "+ str(i[1]) + "on " + str(i[2]))
             await message.reply(str1)
+    connection.close()

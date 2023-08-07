@@ -155,6 +155,7 @@ async def chg_nameHandler(message: types.Message, state: FSMContext):
     mycursor.close()
     await message.reply("Okay done, use /myinfo to check")
     await state.finish()
+    db.close()
 
 async def chg_room(message: types.Message, state: FSMContext):
     """
@@ -192,8 +193,10 @@ async def chg_roomHandler(message: types.Message, state: FSMContext):
         db.commit()
         await message.reply("Okay done, use /myinfo to check")
         await state.finish()
+        db.close()
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
+    
 
 async def chg_name1(message: types.Message, state: FSMContext):
     """
@@ -229,6 +232,7 @@ async def chg_nameHandler1(message: types.Message, state: FSMContext):
     db.commit()
     await message.reply("Okay done, use /myinfo to check")
     await state.finish()
+    db.close()
 
 async def chg_room1(message: types.Message, state: FSMContext):
     """
@@ -266,5 +270,6 @@ async def chg_roomHandler1(message: types.Message, state: FSMContext):
         db.commit()
         await message.reply("Okay done, use /myinfo to check")
         await state.finish()
+        db.close()
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")

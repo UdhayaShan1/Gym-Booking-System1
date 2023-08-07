@@ -204,6 +204,7 @@ async def set_nusnet(message: types.Message, state: FSMContext):
             await message.reply("You have already been registered! Use /myinfo to check again")
             await state.finish()
     mycursor.close()
+    db.close()
 
 async def set_name(message: types.Message, state: FSMContext):
     """
@@ -309,6 +310,7 @@ async def set_spotter_room(message: types.Message, state: FSMContext):
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
     mycursor.close()
+    db.close()
 
 async def myinfo(message: types.Message):
     """
@@ -336,3 +338,4 @@ async def myinfo(message: types.Message):
             verifiedStr = "\n\nYou are verified!"
         await message.reply("Your NUSNET is " + myresult[-2] + "\n\nYour name is " + myresult[3] + "\n\nYour room number is " + myresult[2] + "\n\nYour spotter is " + myresult[-4] + "\n\nYour spotter room number is " + myresult[-3] + verifiedStr)
     mycursor.close()
+    db.close()

@@ -164,6 +164,7 @@ async def unBook(message: types.Message, state: FSMContext):
         keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
         await message.reply("Choose the slot that you wish to unbook", reply_markup=keyboard)
         await state.set_state(Book.picked_unbook_date)
+    db.close()
 
 # To be explicity called if user wishes to unbook more slots
 async def unBookCycle(message: types.Message, state: FSMContext, id):
@@ -199,6 +200,7 @@ async def unBookCycle(message: types.Message, state: FSMContext, id):
         keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
         await message.reply("Choose the slot that you wish to unbook", reply_markup=keyboard)
         await state.set_state(Book.picked_unbook_date)
+    db.close()
 
 async def unBookHandler(call: types.CallbackQuery, state: FSMContext):
     db = create_connection()
@@ -218,6 +220,7 @@ async def unBookHandler(call: types.CallbackQuery, state: FSMContext):
     keyboard = InlineKeyboardMarkup(row_width=2).add(*buttons)
     await call.message.answer("Would like you to unbook additional slots?", reply_markup=keyboard)
     await state.set_state(Book.picked_unbook_additional)
+    db.close()
 
 async def unBookMoreHandler(call: types.CallbackQuery, state: FSMContext):
     if call.data == "Yes":

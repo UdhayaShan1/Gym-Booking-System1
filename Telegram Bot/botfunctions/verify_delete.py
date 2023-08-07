@@ -155,6 +155,7 @@ async def verify(message: types.Message, state: FSMContext):
             await message.reply("Okay, OTP sent to your NUSNET email, please type it out")
             await state.set_state(Form.otp_verify)
     mycursor.close()
+    db.close()
 
 async def otp_handler(message: types.Message, state: FSMContext):
     # print(users)
@@ -173,6 +174,7 @@ async def otp_handler(message: types.Message, state: FSMContext):
         await message.reply("😔 Sorry, OTP is not correct, try /verify again!")
         await state.finish()
     mycursor.close()
+    db.close()
 
 async def deleteMyDetails(message: types.Message, state: FSMContext):
     """
@@ -207,6 +209,7 @@ async def deleteMyDetails(message: types.Message, state: FSMContext):
         await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our mySQL database and any attached bookings", reply_markup=keyboard2)
         await state.set_state(Form.delete_details)
     mycursor.close()
+    db.close()
 
 #Helper function to retrieve nusnet from database using teleId
 def nusnetRetriever(id):
@@ -217,6 +220,7 @@ def nusnetRetriever(id):
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     mycursor.close()
+    db.close()
     return myresult[-2]
 
 
@@ -248,4 +252,5 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
         await call.message.answer("Data not deleted..")
     # Add code to ammend all associated bookings to have teleId and spotterId to None.
     mycursor.close()
+    db.close()
     await state.finish()
