@@ -248,8 +248,8 @@ footer {
 /* Login */
 
 .loginLogo {
-  width: 48vw;
-  height: 12vw;
+  width: 40vw;
+  height: 10vw;
   display: block;
   top: 7%;
   position: absolute;
@@ -262,35 +262,41 @@ footer {
 
 .loginContainer {
   position: relative;
-  max-width: 320px;
+  max-width: 22vw;
   margin: 0 auto;
-  top: 275px;
-  padding: 25px;
+  top: 30vh;
+  padding: 2vw;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
 }
 
+.loginContainer h1 {
+  font-family: Arial, sans-serif;
+  font-size: 1.3vw;
+  text-align: center;
+}
+
 .loginContainer label {
-  font-size: 15px; 
+  font-size: 1.2vw; 
   font-weight: 450;
   position: relative;
   bottom: 3px;   
-  margin-bottom: 10px;         
+  margin-bottom: 1vw;         
 }
 
 .loginContainer input {
   width: 100%;
-  padding: 5px 0px;
+  padding: 0.7vw 0px;
   border-radius: 5px;
   background: #f0f0f0;
   border: 0;
-  margin-bottom: 20px;
+  margin-bottom: 1.8vh;
 }
 
 .loginContainer button {
-  font-size: 13px; 
-  padding: 10px 15px;
+  font-size: 1vw; 
+  padding: 0.9vw 1.1vw;
   border: none;
   background-color: #782646;
   color: #f2f2f2;
@@ -315,6 +321,21 @@ footer {
 #forgotPwdContainer label {
   margin-right: 5px; /* Adds spacing to the right of the label */
 }
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {}
 
 /* Index  */
 
