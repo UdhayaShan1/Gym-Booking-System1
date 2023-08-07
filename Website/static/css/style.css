@@ -144,10 +144,11 @@ footer {
 /* Registration */
 
 .registerLogo {
-  width: 490px;
-  height: 368px;
+  width: 40vw;
+  height: 10vw;
+  top: 4%;
   display: block;
-  position: absolute;
+  position:absolute;
   margin-left: auto;
   margin-right: auto;
   left: 0;
@@ -157,26 +158,33 @@ footer {
 
 .registrationPage {
   position: relative;
-  top: 280px;
-  max-width: 300px;
+  top: 26vh;
+  max-width: 24vw;
   margin: 0 auto;
-  padding: 25px;
+  padding: 1.3vw;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
 }
 
+.registrationPage h1 {
+  font-size: 1.7vw;
+  text-align: center;
+  font-family: arial, sans-serif;
+}
+
 .registrationPage label {
-  font-size: 15px; 
+  font-size: 1.2vw; 
   font-weight: 450; 
   position: relative;
-  bottom: 3px;  
-  margin-bottom: 10px;         
+  bottom: 0.05vw;  
+  margin-bottom: 0.5vw;  
+  font-family: arial, sans-serif;       
 }
 
 .registrationPage button {
-  font-size: 13px; 
-  padding: 10px 15px;
+  font-size: 0.8vw; 
+  padding: 0.6vw 1vw;
   border: none;
   background-color: #782646;
   color: #f2f2f2;
@@ -195,18 +203,46 @@ footer {
 }
 
 .registrationPage a {
-  font-size: 13px; 
+  font-size: 0.8vw; 
   font-weight: 400;
   color: #525252;
 }
 
 .registrationPage input {
   width: 100%;
-  padding: 5px 0px;
+  padding: 0.3vh 0vw;
   border-radius: 5px;
   background: #f0f0f0;
   border: 0;
-  margin-bottom: 10px;
+  margin-bottom: 2vh;
+}
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+  .registrationPage {
+    top: 24vh
+  }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  .registrationPage {
+    top: 24vh;
+  }
+}
+
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+  .registrationPage {
+    top: 26vh
+  }
 }
 
 /* Login */
