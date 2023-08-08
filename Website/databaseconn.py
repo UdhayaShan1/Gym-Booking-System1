@@ -11,7 +11,7 @@ db = mysql.connector.connect(
 )
 
 def dbcreator():
-    pwd = "pscale_pw_6FwzujGzhViG30ZzrXTr8HpVFaOz33j2SK5w4LHo9VH"
+    pwd1 = pwd
     db = mysql.connector.connect(
         host="gcp.connect.psdb.cloud",
         user='2m2rl8qq29djzzqvooet',
