@@ -66,3 +66,6 @@
 1) Final touch up to CSS to all pages.
 2) Abstracted navbar functionality to seperate js file.
 3) Bug fixes on profile page, trouble navigating to booking page. Fixed by event.preventDefault();
+
+0.7.1
+1) Added ability to send feedback on specific equipment on the view equipment page.
