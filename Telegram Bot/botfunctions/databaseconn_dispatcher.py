@@ -34,7 +34,7 @@ with open("includes\database_pwd.txt") as f:
 def create_connection():
     db = mysql.connector.connect(
         host="gcp.connect.psdb.cloud",
-        user='2m2rl8qq29djzzqvooet',
+        user='dmcurece3iqorlzf3qz1',
         passwd=pwd,
         database="fitbook"
     )
