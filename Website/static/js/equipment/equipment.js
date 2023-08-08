@@ -1,5 +1,9 @@
 document.addEventListener("DOMContentLoaded", function() {
     var equipmentContainer = document.getElementById("equipment1");
+    var equipmentDropdown = document.getElementById("equipmentDropdown");
+    var feedbackSection = document.getElementById("feedbackText");
+    var feedbackButton = document.getElementById("submitFeedbackButton");
+
     let weightHeader = document.createElement("h2");
     weightHeader.textContent = "Weights";
     equipmentContainer.appendChild(weightHeader);
@@ -67,5 +71,43 @@ document.addEventListener("DOMContentLoaded", function() {
                         equipmentContainer.appendChild(equipmentDiv);
                     }
                 });
+            fetch("/fetchequipmentall")
+            .then(response => response.json())
+            .then(data => {
+                for (let key in data) {
+                    let newOption = document.createElement("option");
+                    newOption.value = key;
+                    newOption.textContent = key;
+                    equipmentDropdown.appendChild(newOption);
+
+                }
+            })
+            .catch(error => {console.error("Error", error);
+            window.alert("Login failed");
         });
+        });
+    
+    feedbackButton.addEventListener("click", function(event) {
+        event.preventDefault();
+        if (!equipmentDropdown.value) {
+            window.alert("Select a equipment!");
+        } else if (!feedbackSection.value) {
+            window.alert("Enter your feedback!");
+        } else {
+            window.alert(feedbackSection.value);
+            var formData = new FormData();
+            formData.append("feedback", feedbackSection.value);
+            formData.append("equipment", equipmentDropdown.value);
+            fetch("/equipmentreport", {
+                method:"POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+
+            })
+        }
+    })
+
+
 });

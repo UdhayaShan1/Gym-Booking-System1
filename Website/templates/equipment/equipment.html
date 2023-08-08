@@ -24,6 +24,19 @@
     <h1 style="text-align: center;margin-bottom: 20px;">View Equipment Status Here!</h1>
     <div class="equipmentContainer">
         <div id="equipment1" class="equipment-container"></div>
+        <div id="feedbackForm1" class="feedback-form">
+            <h2>Provide Feedback</h2>
+            <form id="feedbackForm">
+                <label for="equipmentDropdown">Select Equipment:</label>
+                <select id="equipmentDropdown">
+                    <option value="">Select Equipment</option>
+                    
+                </select>
+                <label for="feedbackText">Feedback:</label>
+                <textarea id="feedbackText" rows="4" cols="50" placeholder="Enter your feedback"></textarea>
+                <button id="submitFeedbackButton" type="button">Submit Feedback</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>
