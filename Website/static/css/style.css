@@ -720,8 +720,8 @@ footer {
 
 .changePassword {
   position: relative;
-  top: 34vh;
-  max-width: 17vw;
+  top: 29vh;
+  max-width: 20vw;
   margin: 0 auto;
   padding: 1.5vw;
   background-color: #fff;
@@ -745,16 +745,16 @@ footer {
 
 .changePassword input {
   width: 100%;
-  padding: 0.7vw 0px;
+  padding: 1vh 0px;
   border-radius: 5px;
   background: #f0f0f0;
   border: 0;
-  margin-bottom: 1.8vw;
+  margin-bottom: 2vh;
 }
 
 .changePassword button {
   font-size: 1vw; 
-  padding: 0.9vw 1.1vw;
+  padding: 0.8vw 1vw;
   border: none;
   background-color: #782646;
   color: #f2f2f2;
