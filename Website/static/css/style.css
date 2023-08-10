@@ -121,40 +121,44 @@ footer {
 }
 
 .telegram-text {
-  margin-top: 10px;
+  margin-top: 1vw;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.telegram-text h2 {
+  font-size: 1.5vw;
+}
+
 .telegram-logo {
-  width: 50px; 
+  width: 8vw; 
   height: auto;
-  margin-right: 10px; 
+  margin-right: 0.8vw; 
 }
 
 /* Profile */
 
 .profileContainer {
   position: relative;
-  top: 15px;
-  max-width: 600px;
+  max-width: 67vw;
   margin: 0 auto;
-  margin-top: 5%;
-  padding: 20px;
+  margin-top: 3%;
+  padding: 1.4vw;
   background-color: #fff;
-  border-radius: 5px;
+  border-radius: 0.5vw;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .profileContainer h1 {
-  font-size: 24px;
-  margin-bottom: 10px;
+  font-size: 2.6vw;
+  margin-bottom: 0.5vw;
 }
 
 .profileContainer p {
   margin-top: 0;
-  margin-bottom: 20px;
+  font-size: 1.8vw;
+  margin-bottom: 1vw;
 }
 
 .profileContainer table {
@@ -163,7 +167,8 @@ footer {
 }
 
 .profileContainer th, td {
-  padding: 8px;
+  font-size: 2vw;
+  padding: 1vw;
   text-align: left;
 }
 
@@ -176,12 +181,13 @@ footer {
 }
 
 .profileContainer button {
-  padding: 8px 16px;
+  padding: 0.9vw 1.8vw;
   border: none;
   background-color: #782646;
   color: #f2f2f2;
   cursor: pointer;
   border-radius: 3px;
+  font-size: 1.5vw;
 }
 
 .profileContainer button:hover {
@@ -263,12 +269,6 @@ footer {
   border: 0;
   margin-bottom: 2vh;
 }
-
-/* Extra small devices (phones, 600px and down) */
-@media only screen and (max-width: 600px) {}
-
-/* Small devices (portrait tablets and large phones, 600px and up) */
-@media only screen and (min-width: 600px) {}
 
 /* Medium devices (landscape tablets, 768px and up) */
 @media only screen and (min-width: 768px) {
@@ -368,21 +368,6 @@ footer {
 #forgotPwdContainer label {
   margin-right: 5px; /* Adds spacing to the right of the label */
 }
-
-/* Extra small devices (phones, 600px and down) */
-@media only screen and (max-width: 600px) {}
-
-/* Small devices (portrait tablets and large phones, 600px and up) */
-@media only screen and (min-width: 600px) {}
-
-/* Medium devices (landscape tablets, 768px and up) */
-@media only screen and (min-width: 768px) {}
-
-/* Large devices (laptops/desktops, 992px and up) */
-@media only screen and (min-width: 992px) {}
-
-/* Extra large devices (large laptops and desktops, 1200px and up) */
-@media only screen and (min-width: 1200px) {}
 
 /* Index  */
 
@@ -824,47 +809,47 @@ footer {
 .equipmentContainer {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
+  padding: 1.3vw;
   background-color: #fff;
   max-width: 100%;
   width: 65%;
-  margin-bottom: 20px;
+  margin-bottom: 1.3vw;
   margin: auto;
 }
 
 .equipmentContainer h1 {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 1.3vw;
   }
 
 .equipmentContainer h2 {
-  margin-top: 40px;
-  margin-bottom: 10px;
+  margin-top: 2vw;
+  margin-bottom: 0.8vw;
   }
 
 .equipmentContainer h3 {
-  margin-top: 10px;
+  margin-top: 0.8vw;
   }
 
 .equipment-container {
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  padding: 0.8vw;
   background-color: #e2dad9;
   max-width: 100%;
   width: 80%;
-  margin-bottom: 20px;
+  margin-bottom: 1.3vw;
   margin-right: 3px;
 }
 
 .equipment-name {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.1vw;
 }
 
 .equipment-info {
   margin: 0;
-  font-size: 16px;
+  font-size: 1vw;
 }
 
 .equipment-status {
@@ -876,22 +861,64 @@ footer {
   margin-top: 5px;
 }
 
+.feedback-form {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.feedback-form h2 {
+  font-size: 2.2vw;
+}
+
+#feedbackForm label {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1.1vw;
+  font-weight: 200;
+}
+
+#equipmentDropdown {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9vw;
+  border-radius: 5px;
+}
+
+#feedbackText {
+    padding: 0.7vw 0.7vw;
+    display: block;
+    width: 95%;
+    font: 1vw Arial, cursive;
+    border-radius: 5px;
+    background: #f0f0f0;
+    border: 0;
+    margin-bottom: 0.8px;
+  
+}
+
+#submitFeedbackButton {
+  font-size: 0.9vw; 
+  padding: 0.8vw 1vw;
+  border: none;
+  background-color: #782646;
+  color: #f2f2f2;
+  cursor: pointer;
+  border-radius: 3px; 
+}
+
 /* Report */
 
 .reportingContainer {
   position: relative;
-  top: 100px;
+  top: 3vh;
   max-width: 100%;
   width: 60%;
   margin: 0 auto;
-  padding: 25px;
+  padding: 1.4vw;
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
 }
 
 .reportingContainer label {
-  font-size: 17px; 
+  font-size: 1.1vw; 
   font-weight: 450;
   position: relative;
   bottom: 3px;   
@@ -902,16 +929,16 @@ footer {
   padding: 5px 5px;
   display: block;
   width: 95%;
-  font:15px Arial, cursive;
+  font:1vw Arial, cursive;
   border-radius: 5px;
   background: #f0f0f0;
   border: 0;
-  margin-bottom: 10px;
+  margin-bottom: 0.6vw;
 }
 
 .reportingContainer button {
-  font-size: 13px; 
-  padding: 10px 15px;
+  font-size: 0.9vw; 
+  padding: 0.85vw 1vw;
   border: none;
   background-color: #782646;
   color: #f2f2f2;
@@ -920,8 +947,8 @@ footer {
 }
 
 .reportingContainer input[type=submit] {
-  font-size: 13px; 
-  padding: 10px 15px;
+  font-size: 0.9vw; 
+  padding: 0.85vw 1vw;
   border: none;
   background-color: #782646;
   color: #f2f2f2;
@@ -930,7 +957,7 @@ footer {
 }
 
 .reportingContainer input[type=file] {
-  font-size: 13px; 
+  font-size: 0.9vw; 
   padding: 5px;
   border: none;
 }
