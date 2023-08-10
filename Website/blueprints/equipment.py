@@ -13,7 +13,7 @@ from flask_login import LoginManager, login_user, current_user, login_required, 
 import mysql.connector
 from flask_session import Session
 from datetime import datetime, timedelta
-from databaseconn import db
+from databaseconn import db, dbcreator
 from blueprints.helper_functions import (generate_otp, 
                              check_string_format,
                              check,
@@ -59,3 +59,26 @@ def fetchEquipmentOthers():
     mycursor.close()
     #print(dict_nonweight)
     return jsonify(dict_nonweight)
+
+@equipment_blueprint.route("/fetchequipmentall")
+def fetchEquipmentAll():
+    sqlFormula = "SELECT name FROM equipment"
+    db1 = dbcreator()
+    mycursor = db1.cursor()
+    mycursor.execute(sqlFormula)
+    myresult = mycursor.fetchall()
+    dp = {}
+    print(myresult)
+    for i in myresult:
+        dp[i[0]] = 1
+    mycursor.close()
+    db1.close()
+    print(dp)
+    return jsonify(dp)
+
+@equipment_blueprint.route("/equipmentreport", methods=["POST"])
+def equipmentReport():
+    feedback = request.form["feedback"]
+    equipment = request.form["equipment"]
+    print(feedback, equipment)
+    return jsonify({"status" : "success"})
