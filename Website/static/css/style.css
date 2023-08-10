@@ -121,40 +121,44 @@ footer {
 }
 
 .telegram-text {
-  margin-top: 10px;
+  margin-top: 1vw;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.telegram-text h2 {
+  font-size: 1.5vw;
+}
+
 .telegram-logo {
-  width: 50px; 
+  width: 8vw; 
   height: auto;
-  margin-right: 10px; 
+  margin-right: 0.8vw; 
 }
 
 /* Profile */
 
 .profileContainer {
   position: relative;
-  top: 15px;
-  max-width: 600px;
+  max-width: 67vw;
   margin: 0 auto;
-  margin-top: 5%;
-  padding: 20px;
+  margin-top: 3%;
+  padding: 1.4vw;
   background-color: #fff;
-  border-radius: 5px;
+  border-radius: 0.5vw;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .profileContainer h1 {
-  font-size: 24px;
-  margin-bottom: 10px;
+  font-size: 2.6vw;
+  margin-bottom: 0.5vw;
 }
 
 .profileContainer p {
   margin-top: 0;
-  margin-bottom: 20px;
+  font-size: 1.8vw;
+  margin-bottom: 1vw;
 }
 
 .profileContainer table {
@@ -163,7 +167,8 @@ footer {
 }
 
 .profileContainer th, td {
-  padding: 8px;
+  font-size: 2vw;
+  padding: 1vw;
   text-align: left;
 }
 
@@ -176,12 +181,13 @@ footer {
 }
 
 .profileContainer button {
-  padding: 8px 16px;
+  padding: 0.9vw 1.8vw;
   border: none;
   background-color: #782646;
   color: #f2f2f2;
   cursor: pointer;
   border-radius: 3px;
+  font-size: 1.5vw;
 }
 
 .profileContainer button:hover {
