@@ -2,21 +2,28 @@
 <html>
 <head>
     <title>Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="..\static\css\style.css">
     <link rel="stylesheet" href="..\static\css\style.css">
     <link rel="icon" type="'image/x-icon" href="..\static\css\logo.ico">
     <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
 </head>
 <body> 
-    <div class="navbar">
+    <div class="navbar1">
         <h1><span><img src="..\static\css\logo_navbar.png"></span>Welcome! <span id="email"></span></h1>
-        <a href="/main" id="homeButton">Home</a>
+        <div class="navbar" id="myNavbar">
+        <a href="" id="homeButton"><i class="fa fa-fw fa-home"></i></a>
         <a class="active" href="" id="profileButton">Profile</a>
         <a href="" id="bookingButton">Booking</a>
         <a href="" id="editBookingButton">View and Edit Bookings</a>
         <a href="" id="reports">Manage Reports Here</a>
         <a href="" id="equipment">View Equipment Status</a>
         <a href="" id="logoutButton">Logout</a>
-    </div>
+        <a href="javascript:void(0);" class="icon" onclick="displayNav()">
+          <i class="fa fa-bars"></i>
+        </a>
+      </div>
+      </div>
     
     <div class="profileContainer">
         <h1>User Profile</h1>
@@ -55,5 +62,17 @@
             </tr>
         </table>
     </div>
+
+        <script>
+      function displayNav() {
+      var x = document.getElementById("myNavbar");
+      if (x.className === "navbar") {
+        x.className += " responsive";
+      } else {
+        x.className = "navbar";
+      }
+     }
+    </script>
+
 </body>
 </html>
