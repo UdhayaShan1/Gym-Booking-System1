@@ -33,7 +33,7 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
 logging.basicConfig(level=logging.INFO)
 
@@ -148,12 +148,14 @@ async def chg_nameHandler(message: types.Message, state: FSMContext):
     """
     sqlFormula = "UPDATE user SET name = %s WHERE teleId = %s"
     data = (message.text, message.from_id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     db.commit()
     mycursor.close()
     await message.reply("Okay done, use /myinfo to check")
     await state.finish()
+    db.close()
 
 async def chg_room(message: types.Message, state: FSMContext):
     """
@@ -184,14 +186,17 @@ async def chg_roomHandler(message: types.Message, state: FSMContext):
     if check_room_format(s):
         sqlFormula = "UPDATE user SET roomNo = %s WHERE teleId = %s"
         data = (s, message.from_id, )
+        db = create_connection()
         mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         mycursor.close()
         db.commit()
         await message.reply("Okay done, use /myinfo to check")
         await state.finish()
+        db.close()
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")
+    
 
 async def chg_name1(message: types.Message, state: FSMContext):
     """
@@ -220,12 +225,14 @@ async def chg_nameHandler1(message: types.Message, state: FSMContext):
     """
     sqlFormula = "UPDATE user SET spotterName = %s WHERE teleId = %s"
     data = (message.text, message.from_id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     mycursor.close()
     db.commit()
     await message.reply("Okay done, use /myinfo to check")
     await state.finish()
+    db.close()
 
 async def chg_room1(message: types.Message, state: FSMContext):
     """
@@ -256,11 +263,13 @@ async def chg_roomHandler1(message: types.Message, state: FSMContext):
     if check_room_format(s):
         sqlFormula = "UPDATE user SET spotterRoomNo = %s WHERE teleId = %s"
         data = (s, message.from_id, )
+        db = create_connection()
         mycursor = db.cursor()
         mycursor.execute(sqlFormula, data)
         mycursor.close()
         db.commit()
         await message.reply("Okay done, use /myinfo to check")
         await state.finish()
+        db.close()
     else:
         await message.reply("Ensure your string is form XX-XX or XX-XXX depending on type of room e.g 11-12/11-12F")

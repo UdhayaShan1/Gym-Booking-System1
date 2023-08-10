@@ -34,7 +34,7 @@ PARENT_FOLDER_ID = "1wb4h1vSTqsXxYB3-ah_r4cREMQc1ySPR"
 
 # Database connection, we will use mySQL and localhost for now
 
-from botfunctions.databaseconn_dispatcher import db, dp
+from botfunctions.databaseconn_dispatcher import create_connection, dp
 
 
 logging.basicConfig(level=logging.INFO)
@@ -134,6 +134,7 @@ async def verify(message: types.Message, state: FSMContext):
     print(message.from_user.id)
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
@@ -154,9 +155,11 @@ async def verify(message: types.Message, state: FSMContext):
             await message.reply("Okay, OTP sent to your NUSNET email, please type it out")
             await state.set_state(Form.otp_verify)
     mycursor.close()
+    db.close()
 
 async def otp_handler(message: types.Message, state: FSMContext):
     # print(users)
+    db = create_connection()
     mycursor = db.cursor()
     otp_given = message.text
     user = users[message.from_user.id]
@@ -171,6 +174,7 @@ async def otp_handler(message: types.Message, state: FSMContext):
         await message.reply("😔 Sorry, OTP is not correct, try /verify again!")
         await state.finish()
     mycursor.close()
+    db.close()
 
 async def deleteMyDetails(message: types.Message, state: FSMContext):
     """
@@ -189,6 +193,7 @@ async def deleteMyDetails(message: types.Message, state: FSMContext):
     button2 = KeyboardButton('No!')
     keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(button1).add(button2)
     """
+    db = create_connection()
     mycursor = db.cursor()
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (message.from_user.id, )
@@ -204,15 +209,18 @@ async def deleteMyDetails(message: types.Message, state: FSMContext):
         await message.reply("Are you sure you want to delete your details, this is not undoable\nWe will delete your records from our mySQL database and any attached bookings", reply_markup=keyboard2)
         await state.set_state(Form.delete_details)
     mycursor.close()
+    db.close()
 
 #Helper function to retrieve nusnet from database using teleId
 def nusnetRetriever(id):
     sqlFormula = "SELECT * FROM user WHERE teleId = %s"
     data = (id, )
+    db = create_connection()
     mycursor = db.cursor()
     mycursor.execute(sqlFormula, data)
     myresult = mycursor.fetchone()
     mycursor.close()
+    db.close()
     return myresult[-2]
 
 
@@ -227,6 +235,7 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
         call (types.CallbackQuery): The incoming callback query object.
         state (FSMContext): The state object for managing conversation state.
     """
+    db = create_connection()
     mycursor = db.cursor()
     if call.data == "Yes!":
         nusnet = nusnetRetriever(call.from_user.id)
@@ -243,4 +252,5 @@ async def deleteHandler2(call: types.CallbackQuery, state: FSMContext):
         await call.message.answer("Data not deleted..")
     # Add code to ammend all associated bookings to have teleId and spotterId to None.
     mycursor.close()
+    db.close()
     await state.finish()

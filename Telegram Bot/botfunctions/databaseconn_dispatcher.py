@@ -30,13 +30,30 @@ from botfunctions.helper_functions import validnusNet, check_room_format, dateVa
 pwd = None
 with open("includes\database_pwd.txt") as f:
     pwd = f.read().strip()
-db = mysql.connector.connect(
-    host="sql6.freemysqlhosting.net",
-    user='sql6634220',
-    passwd=pwd,
-    database="sql6634220",
-    connect_timeout=30
-)
+
+def create_connection():
+    db = mysql.connector.connect(
+        host="gcp.connect.psdb.cloud",
+        user='dmcurece3iqorlzf3qz1',
+        passwd=pwd,
+        database="fitbook"
+    )
+    return db
+
+def execute_query(connection, query, data=None):
+    cursor = connection.cursor()
+    cursor.execute(query, data)
+    connection.commit()
+    cursor.close()
+
+def fetch_data(connection, query, data=None):
+    cursor = connection.cursor()
+    cursor.execute(query, data)
+    result = cursor.fetchall()
+    cursor.close()
+    return result
+
+
 
 # Set up dispatcher
 TOKEN = None
