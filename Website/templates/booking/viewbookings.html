@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Bookings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="..\..\static\css\style.css">
     <link rel="icon" type="'image/x-icon" href="..\..\static\css\logo.ico">
     <script src="{{ url_for('static', filename='js/booking/viewbookings.js') }}"></script>
@@ -33,20 +34,36 @@
     </style>
 </head>
 <body>
-    <div class="navbar">
+    <div class="navbar1">
         <h1><span><img src="..\..\static\css\logo_navbar.png"></span>Welcome! <span id="email"></span></h1>
-        <a href="" id="homeButton">Home</a>
+        <div class="navbar" id="myNavbar">
+        <a href="" id="homeButton"><i class="fa fa-fw fa-home"></i></a>
         <a href="" id="profileButton">Profile</a>
         <a href="" id="bookingButton">Booking</a>
         <a class="active" href="" id="editBookingButton">View and Edit Bookings</a>
         <a href="" id="reports">Manage Reports Here</a>
         <a href="" id="equipment">View Equipment Status</a>
         <a href="" id="logoutButton">Logout</a>
-    </div> <br>
+        <a href="javascript:void(0);" class="icon" onclick="displayNav()">
+          <i class="fa fa-bars"></i>
+        </a>
+      </div>
+      </div> <br>
 
     <h1 style="text-align: center;margin-bottom: 20px;">Manage your bookings here!</h1>
     <h2 id="bookingDirector"></h2>
     <div id="buttonContainer"></div>
 
+    <script>
+        function displayNav() {
+        var x = document.getElementById("myNavbar");
+        if (x.className === "navbar") {
+          x.className += " responsive";
+        } else {
+          x.className = "navbar";
+        }
+       }
+      </script>
+  
 </body>
 </html>
